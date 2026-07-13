@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mundrack — The Kingdom of Code</title>
+  <meta name="theme-color" content="#080706">
+  <style>
+    :root{
+      --gold:#d5a54b;
+      --gold-soft:#f1d08b;
+      --blood:#761d18;
+      --panel:rgba(7,8,8,.88);
+      --line:rgba(213,165,75,.48);
+      --text:#eee7da;
+      --muted:#b5aa98;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0; min-height:100vh; overflow-x:hidden;
+      color:var(--text);
+      font-family:Georgia,"Times New Roman",serif;
+      background:#070706;
+    }
+    button,a{font:inherit}
+    a{color:inherit;text-decoration:none}
+    .scene{
+      min-height:100vh;
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.08) 35%,rgba(0,0,0,.12) 67%,rgba(0,0,0,.64)),
+        linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.72)),
+        url("assets/realm-background.png") center/cover no-repeat;
+      isolation:isolate;
+    }
+    .scene::after{
+      content:""; position:absolute; inset:0; pointer-events:none; z-index:1;
+      background:radial-gradient(circle at 57% 37%,rgba(255,112,19,.12),transparent 33%);
+    }
+    .ember-layer{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+    .ember{position:absolute;bottom:-20px;width:3px;height:3px;border-radius:50%;background:#ff8a2c;box-shadow:0 0 10px #ff6524;animation:rise linear infinite}
+    @keyframes rise{to{transform:translate(var(--drift),-110vh);opacity:0}}
+    .top{
+      position:relative; z-index:8; display:flex; justify-content:space-between; align-items:flex-start;
+      padding:24px 28px; gap:22px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:16px;
+      text-shadow:0 5px 18px #000;
+    }
+    .crest{
+      width:72px;height:86px;display:grid;place-items:center;
+      clip-path:polygon(50% 0,92% 18%,88% 74%,50% 100%,12% 74%,8% 18%);
+      background:linear-gradient(#22180d,#070706);
+      border:2px solid var(--gold);
+      box-shadow:0 0 0 3px #090806 inset;
+      font-size:2rem;
+    }
+    .brand h1{margin:0;color:var(--gold-soft);font-size:clamp(2.2rem,4vw,4.6rem);letter-spacing:.05em}
+    .brand p{margin:2px 0 0;color:#c8ab76;letter-spacing:.28em;font-size:.86rem}
+    .chronicle{
+      width:min(320px,28vw);padding:18px;border:1px solid var(--line);
+      background:var(--panel);box-shadow:0 18px 48px #000;
+    }
+    .chronicle h3{margin:0 0 10px;color:var(--gold-soft);text-align:center}
+    .chronicle p{margin:0;color:#c7bcaa;line-height:1.55;font-size:.94rem}
+    .layout{position:relative;z-index:7;display:grid;grid-template-columns:230px 1fr;gap:20px;padding:0 26px 22px}
+    .sidebar{display:flex;flex-direction:column;gap:10px}
+    .profile-card,.status-card,.menu button{
+      border:1px solid var(--line);background:var(--panel);box-shadow:0 14px 38px #000;
+    }
+    .profile-card{padding:16px}
+    .profile-card strong{display:block;color:var(--gold-soft);font-size:1.08rem}
+    .profile-card p{margin:7px 0 0;color:#c3b8a8;line-height:1.48;font-size:.9rem}
+    .menu{display:grid;gap:8px}
+    .menu button{
+      color:#d5c39c;text-align:left;padding:12px 14px;cursor:pointer;transition:.22s;
+    }
+    .menu button:hover,.menu button.active{transform:translateX(5px);color:#fff0c8;border-color:#e0b75c;background:linear-gradient(90deg,rgba(118,29,24,.85),rgba(12,10,8,.92))}
+    .menu small{display:block;color:#9e927f;margin-top:3px}
+    .status-card{padding:14px;color:#bfb4a2;font-size:.88rem;line-height:1.7}
+    .status-card b{color:var(--gold)}
+    .main{min-width:0;display:flex;flex-direction:column;justify-content:flex-end}
+    .battle-message{
+      align-self:center;margin-top:24vh;width:min(470px,80%);
+      text-align:center;padding:14px 16px;border:1px solid var(--line);
+      background:rgba(7,7,6,.78);box-shadow:0 15px 45px #000;opacity:0;transform:translateY(25px) scale(.94);
+      transition:.4s;pointer-events:none;
+    }
+    .battle-message.show{opacity:1;transform:none}
+    .battle-message h2{margin:0;color:var(--gold-soft);font-size:1.2rem}
+    .battle-message p{margin:7px 0 0;color:#c4b8a4}
+    .repo-reveal{
+      align-self:center;margin:10px 0 16px;width:min(420px,84%);
+      padding:16px;border:1px solid var(--line);background:rgba(9,8,7,.94);
+      box-shadow:0 0 35px rgba(255,93,23,.22),0 20px 55px #000;
+      opacity:0;transform:translateY(40px) scale(.9);transition:.55s;pointer-events:none;
+    }
+    .repo-reveal.show{opacity:1;transform:none;pointer-events:auto}
+    .repo-reveal .fallen{color:#e2b97a;text-align:center;letter-spacing:.12em}
+    .repo-reveal h3{margin:10px 0 7px;color:#f0c96d;font-size:1.35rem}
+    .repo-reveal p{margin:0;color:#b9ad9b}
+    .repo-reveal a{display:inline-block;margin-top:13px;padding:9px 13px;border:1px solid #b7783b;background:#611b14;color:#f6ddb1}
+    .battle-board{
+      border:1px solid var(--line);background:rgba(6,6,5,.9);box-shadow:0 18px 55px #000;
+      padding:14px;
+    }
+    .battle-board h2{text-align:center;margin:0;color:var(--gold-soft);font-size:1.3rem}
+    .battle-board>p{text-align:center;margin:4px 0 12px;color:#a99d8b;font-size:.88rem}
+    .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}
+    .card{
+      min-height:156px;padding:12px;border:1px solid rgba(213,165,75,.28);
+      background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,.22));
+      transition:.28s;position:relative;overflow:hidden;
+    }
+    .card:hover{transform:translateY(-5px);border-color:var(--gold)}
+    .card .state{font-size:.72rem;letter-spacing:.1em;color:#85c777}
+    .card.enemy .state{color:#bd84c4}
+    .card.fallen .state{color:#db6559}
+    .card h3{font-size:1rem;margin:24px 0 5px;color:#e4c06e}
+    .card p{margin:0;color:#ada18f;font-size:.82rem}
+    .card::after{content:"";position:absolute;inset:auto -25px -25px auto;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(255,118,37,.16),transparent 68%)}
+    .battle-actions{text-align:center;margin-top:12px}
+    .battle-actions button{
+      padding:12px 26px;border:1px solid #bf8241;color:#f0d19b;cursor:pointer;
+      background:linear-gradient(#741f17,#2c0d0a);box-shadow:0 0 0 3px #100a06 inset,0 8px 22px #000;
+      transition:.22s;
+    }
+    .battle-actions button:hover{transform:translateY(-2px);filter:brightness(1.13)}
+    .knight,.zombie{
+      position:absolute;z-index:6;bottom:33%;width:46px;height:86px;filter:drop-shadow(0 12px 12px #000);transition:transform .9s ease,opacity .5s;
+    }
+    .knight{left:35%;background:linear-gradient(90deg,#20252a,#8f969d,#171a1e);clip-path:polygon(36% 0,65% 0,72% 18%,88% 35%,66% 52%,70% 100%,49% 74%,30% 100%,33% 52%,12% 35%,28% 18%)}
+    .zombie{right:31%;background:linear-gradient(90deg,#213126,#667359,#151c17);clip-path:polygon(34% 0,67% 5%,76% 23%,98% 38%,69% 50%,74% 100%,50% 72%,27% 100%,32% 50%,0 39%,24% 23%)}
+    .scene.battling .knight{animation:chargeKnight 1s ease-in-out 2 alternate}
+    .scene.battling .zombie{animation:chargeZombie 1s ease-in-out 2 alternate}
+    .scene.battling{animation:shake .18s linear 9}
+    @keyframes chargeKnight{to{transform:translateX(180px) rotate(8deg)}}
+    @keyframes chargeZombie{to{transform:translateX(-150px) rotate(-9deg)}}
+    @keyframes shake{50%{background-position:51% center}}
+    .flash{position:absolute;z-index:5;inset:0;background:radial-gradient(circle at 55% 45%,rgba(255,188,76,.72),rgba(255,72,22,.22) 18%,transparent 40%);opacity:0;pointer-events:none}
+    .scene.battling .flash{animation:flash 2s ease-out}
+    @keyframes flash{20%{opacity:1}100%{opacity:0}}
+    @media(max-width:900px){
+      .chronicle{display:none}
+      .layout{grid-template-columns:1fr;padding:0 14px 15px}
+      .sidebar{display:grid;grid-template-columns:1fr 1fr}
+      .menu,.status-card{grid-column:1/-1}
+      .menu{grid-template-columns:repeat(3,1fr)}
+      .menu button{font-size:.78rem}
+      .cards{grid-template-columns:repeat(2,1fr)}
+      .battle-message{margin-top:18vh}
+    }
+    @media(max-width:560px){
+      .top{padding:15px}
+      .crest{width:52px;height:64px}
+      .brand h1{font-size:2rem}.brand p{font-size:.62rem}
+      .profile-card{display:none}
+      .sidebar{display:block}
+      .menu{grid-template-columns:repeat(2,1fr)}
+      .status-card{display:none}
+      .cards{grid-template-columns:1fr}
+      .card:nth-child(n+3){display:none}
+      .knight{left:24%}.zombie{right:20%}
+    }
+  </style>
+</head>
+<body>
+<section class="scene" id="scene">
+  <div class="flash"></div>
+  <div class="ember-layer" id="embers"></div>
+  <div class="knight" aria-hidden="true"></div>
+  <div class="zombie" aria-hidden="true"></div>
+
+  <header class="top">
+    <div class="brand">
+      <div class="crest">☠</div>
+      <div>
+        <h1>MUNDRACK</h1>
+        <p>THE KINGDOM OF CODE</p>
+      </div>
+    </div>
+    <aside class="chronicle">
+      <h3>CRÓNICAS DEL REINO</h3>
+      <p>
+        Cada línea de código es un guerrero. Cada error, un enemigo.
+        Cada proyecto terminado, una victoria. Solo los repositorios
+        más fuertes sobreviven.
+      </p>
+    </aside>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <section class="profile-card">
+        <strong>Mateo Gabriel Puga Montesdeoca</strong>
+        <p>Estudiante de Software en la UDLA. Constructor de sistemas, cazador de bugs y protector de la calidad.</p>
+      </section>
+
+      <nav class="menu">
+        <button class="active" data-target="battle">⚔ BATALLA<small>(defiende tu código)</small></button>
+        <button data-target="campaigns">⚑ CAMPAÑAS<small>(repositorios activos)</small></button>
+        <button data-target="relics">▣ RELIQUIAS<small>(repositorios antiguos)</small></button>
+        <button data-target="arsenal">⚒ ARSENAL<small>(tecnologías y habilidades)</small></button>
+        <button data-target="lab">☠ SALA DEL NECROMANTE<small>(experimentos y prototipos)</small></button>
+        <button data-target="about">♟ SOBRE MÍ<small>(perfil profesional)</small></button>
+      </nav>
+
+      <section class="status-card">
+        <b>ESTADO DEL REINO</b><br>
+        Repositorios activos: <b>2</b><br>
+        Reliquias conservadas: <b>2</b><br>
+        Tecnologías dominadas: <b>12+</b><br>
+        Batallas ganadas: <b>∞</b>
+      </section>
+    </aside>
+
+    <main class="main">
+      <div class="battle-message" id="battleMessage">
+        <h2>LA BATALLA HA COMENZADO</h2>
+        <p>Los defensores del reino avanzan. Cada caída revela una historia del código.</p>
+      </div>
+
+      <article class="repo-reveal" id="repoReveal">
+        <div class="fallen">SOLDADO CAÍDO</div>
+        <h3 id="repoName">Interconexion_de_sistemas</h3>
+        <p id="repoDesc">JavaScript · API y microservicios · Reliquia preservada</p>
+        <a id="repoLink" href="https://github.com/Mundrack/Interconexion_de_sistemas" target="_blank" rel="noreferrer">VER REPOSITORIO</a>
+      </article>
+
+      <section class="battle-board">
+        <h2>CAMPO DE BATALLA</h2>
+        <p>Cada soldado representa un repositorio. Defiende tu código.</p>
+
+        <div class="cards">
+          <article class="card">
+            <span class="state">VIVO</span>
+            <h3>Interconexion_de_sistemas</h3>
+            <p>API, conexiones y aprendizaje inicial.</p>
+          </article>
+          <article class="card">
+            <span class="state">VIVO</span>
+            <h3>Proyecto_IA_Accidentes</h3>
+            <p>Modelo predictivo y desarrollo web.</p>
+          </article>
+          <article class="card fallen">
+            <span class="state">CAÍDO</span>
+            <h3>PracticaArchivos</h3>
+            <p>Repositorio antiguo conservado.</p>
+          </article>
+          <article class="card enemy">
+            <span class="state">ENEMIGO</span>
+            <h3>Proyecto obsoleto</h3>
+            <p>Dependencias rotas y deuda técnica.</p>
+          </article>
+        </div>
+
+        <div class="battle-actions">
+          <button id="startBattle">⚔ INICIAR BATALLA</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</section>
+
+<script>
+  const scene = document.getElementById("scene");
+  const startBattle = document.getElementById("startBattle");
+  const message = document.getElementById("battleMessage");
+  const reveal = document.getElementById("repoReveal");
+
+  const fallenRepos = [
+    {
+      name:"Interconexion_de_sistemas",
+      desc:"JavaScript · API y microservicios · Reliquia preservada",
+      url:"https://github.com/Mundrack/Interconexion_de_sistemas"
+    },
+    {
+      name:"Proyecto_IA_Accidentes",
+      desc:"HTML · inteligencia artificial · Evidencia de evolución",
+      url:"https://github.com/Mundrack/Proyecto_IA_Accidentes"
+    }
+  ];
+  let battleIndex = 0;
+
+  startBattle.addEventListener("click", () => {
+    startBattle.disabled = true;
+    startBattle.textContent = "⚔ BATALLA EN CURSO...";
+    message.classList.add("show");
+    reveal.classList.remove("show");
+    scene.classList.remove("battling");
+    void scene.offsetWidth;
+    scene.classList.add("battling");
+
+    setTimeout(() => {
+      const repo = fallenRepos[battleIndex % fallenRepos.length];
+      document.getElementById("repoName").textContent = repo.name;
+      document.getElementById("repoDesc").textContent = repo.desc;
+      document.getElementById("repoLink").href = repo.url;
+      reveal.classList.add("show");
+      battleIndex++;
+    }, 2050);
+
+    setTimeout(() => {
+      scene.classList.remove("battling");
+      startBattle.disabled = false;
+      startBattle.textContent = "⚔ INICIAR OTRA BATALLA";
+    }, 3300);
+  });
+
+  document.querySelectorAll(".menu button").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".menu button").forEach(b => b.classList.remove("active"));
+      button.classList.add("active");
+      const labels = {
+        battle:"Campo de batalla seleccionado.",
+        campaigns:"Campañas: repositorios activos.",
+        relics:"Reliquias: repositorios antiguos.",
+        arsenal:"Arsenal: tecnologías y habilidades.",
+        lab:"Sala del Nigromante: experimentos y prototipos.",
+        about:"Sobre mí: perfil profesional."
+      };
+      message.querySelector("h2").textContent = button.textContent.split("(")[0].trim();
+      message.querySelector("p").textContent = labels[button.dataset.target];
+      message.classList.add("show");
+    });
+  });
+
+  const emberBox = document.getElementById("embers");
+  for(let i=0;i<48;i++){
+    const e=document.createElement("i");
+    e.className="ember";
+    e.style.left=Math.random()*100+"%";
+    e.style.animationDuration=(5+Math.random()*8)+"s";
+    e.style.animationDelay=(-Math.random()*10)+"s";
+    e.style.opacity=.25+Math.random()*.7;
+    e.style.setProperty("--drift",(Math.random()*160-80)+"px");
+    emberBox.appendChild(e);
+  }
+</script>
+</body>
+</html>
