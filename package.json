@@ -1,0 +1,21 @@
+{
+  "name": "mundrack-realm",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "test": "node --test tests/data.test.js tests/scene.test.js tests/characters.test.js",
+    "data:refresh": "node scripts/refresh-repos.mjs",
+    "test:browser": "playwright test",
+    "assets:optimize": "node scripts/optimize-assets.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "jsdom": "^29.1.1",
+    "sharp": "^0.35.4"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  }
+}

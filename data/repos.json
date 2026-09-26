@@ -1,0 +1,109 @@
+{
+  "fetchedAt": "2026-09-26T14:00:19.293Z",
+  "repos": [
+    {
+      "id": 1299623358,
+      "name": "Mundrack.github.io",
+      "description": "The interactive realm of Mundrack — projects, battles and the chronicles of my code.",
+      "html_url": "https://github.com/Mundrack/Mundrack.github.io",
+      "language": "HTML",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "archived": false,
+      "fork": false,
+      "pushed_at": "2026-07-13T18:40:27Z",
+      "topics": []
+    },
+    {
+      "id": 1299615661,
+      "name": "Mundrack",
+      "description": "The gateway to my kingdom of code — projects forged with purpose, quality and evolution.",
+      "html_url": "https://github.com/Mundrack/Mundrack",
+      "language": null,
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "archived": false,
+      "fork": false,
+      "pushed_at": "2026-07-13T18:32:54Z",
+      "topics": []
+    },
+    {
+      "id": 1299583260,
+      "name": "Gremio",
+      "description": null,
+      "html_url": "https://github.com/Mundrack/Gremio",
+      "language": null,
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "archived": false,
+      "fork": false,
+      "pushed_at": "2026-07-13T17:53:07Z",
+      "topics": []
+    },
+    {
+      "id": 657792563,
+      "name": "SegundoSemestre",
+      "description": null,
+      "html_url": "https://github.com/Mundrack/SegundoSemestre",
+      "language": "C",
+      "stargazers_count": 1,
+      "forks_count": 0,
+      "archived": false,
+      "fork": false,
+      "pushed_at": "2023-06-24T02:37:00Z",
+      "topics": []
+    },
+    {
+      "id": 1296940125,
+      "name": "Interconeccion_de_sistemas",
+      "description": null,
+      "html_url": "https://github.com/Mundrack/Interconeccion_de_sistemas",
+      "language": "JavaScript",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "archived": false,
+      "fork": false,
+      "pushed_at": "2026-07-10T22:13:13Z",
+      "topics": []
+    },
+    {
+      "id": 1212815886,
+      "name": "Proyecto_IA_Accidentes",
+      "description": null,
+      "html_url": "https://github.com/Mundrack/Proyecto_IA_Accidentes",
+      "language": "HTML",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "archived": false,
+      "fork": false,
+      "pushed_at": "2026-07-10T14:26:43Z",
+      "topics": []
+    },
+    {
+      "id": 1138524419,
+      "name": "proyectoFinalSeguirdadInformatica",
+      "description": null,
+      "html_url": "https://github.com/Mundrack/proyectoFinalSeguirdadInformatica",
+      "language": "HTML",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "archived": false,
+      "fork": false,
+      "pushed_at": "2026-01-28T01:31:12Z",
+      "topics": []
+    },
+    {
+      "id": 660452528,
+      "name": "PraticaArchivos",
+      "description": null,
+      "html_url": "https://github.com/Mundrack/PraticaArchivos",
+      "language": "C",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "archived": false,
+      "fork": false,
+      "pushed_at": "2023-06-30T21:27:32Z",
+      "topics": []
+    }
+  ]
+}
