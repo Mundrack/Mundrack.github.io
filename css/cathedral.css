@@ -1,0 +1,68 @@
+/* Gothic visual layer. Battle layout and state transitions remain in battle.css. */
+:root{--ink:#100e12;--gold:#d2ad6c;--light:#eee3cf;--muted:#b3a99c;--line:#c7a56a45}
+body{background:radial-gradient(ellipse at 5% 40%,#4c20221f,transparent 40%),radial-gradient(ellipse at 95% 65%,#70542312,transparent 40%),#100e12}
+.site-header{background:linear-gradient(#0c0a0ded,#100c10b8);border-bottom:1px solid #b68d4b66;box-shadow:0 4px 0 #100c0e,0 5px 0 #b68d4b30}
+.site-header nav a{font-family:var(--serif);font-size:12px;letter-spacing:1px;color:#d0c1ad}
+.github-link{background:#291a1d;border-color:#99713f;color:#e9c991}
+.realm{background:#120e10;min-height:820px}
+.environment{background-image:url('../assets/cathedral-sanctuary.png');background-position:center;animation:none;transform:none}
+.scene-vignette{background:linear-gradient(90deg,#0d0a0de8, #0d0a0d64 47%,transparent 75%),linear-gradient(0deg,#100e12 0%,transparent 25%)}
+.realm[data-phase='idle']::after{content:'';position:absolute;inset:108px 22px 18px;border:1px solid #b08a455c;box-shadow:inset 0 0 0 5px #0002;pointer-events:none;z-index:5}
+.hero-copy{width:65%;padding-top:220px;text-shadow:0 3px 18px #000}
+h1{font-size:clamp(48px,6vw,88px);letter-spacing:0;line-height:1.12}
+h1 em{color:#ebc98a;text-shadow:0 2px 0 #61442a,0 6px 35px #000}
+.hero-description{color:#d8cbb8;max-width:450px;font:19px/1.8 Georgia,serif}
+.hero-copy .eyebrow{color:#dac295;font-size:11px}
+.experience-note{color:#c2b39d;font-size:9px;max-width:460px;line-height:1.9}
+.idle-knight{display:none!important}
+.chapter{background:#110c1199;padding:16px 20px;border-left:1px solid #ba915855}
+.ornate-button{background:linear-gradient(110deg,#2a1218,#6e3032 50%,#281319);border-color:#d3ac64;box-shadow:inset 0 0 0 3px #190e13,inset 0 0 0 4px #a5804977,0 8px 26px #0006;color:#ffe0a4;min-height:54px}
+.text-link{color:#dfcbae;font-size:13px}
+.royal-motto{max-width:1180px;margin:auto;display:flex;justify-content:center;align-items:center;gap:30px;padding:35px 20px;border-block:1px solid var(--line);background:linear-gradient(90deg,transparent,#6d482114,transparent);text-align:center}
+.royal-motto p{margin:0;font:clamp(14px,1.7vw,20px)/1.6 var(--serif);letter-spacing:2px}
+.royal-motto>span{color:var(--gold);font-size:25px}
+.section-wrap{position:relative;padding-top:100px;padding-bottom:100px}
+.section-heading{border-bottom:1px solid var(--line);padding-bottom:28px;position:relative}
+.section-heading:after{content:'✦';position:absolute;bottom:-13px;left:50%;background:var(--ink);padding:0 18px;color:var(--gold)}
+.section-heading h2,.arsenal h2,.about h2{color:#ecd6aa}
+.section-heading>p{color:#beb09e;font:17px/1.8 Georgia,serif}
+.project-toolbar{margin-top:35px;background:#1e171b;padding:0 18px;border:1px solid var(--line)}
+.filters button{font-family:var(--serif);color:#c2b59f;min-height:48px}
+.search input{font-size:14px;min-height:48px}
+.data-status{color:#b7a78e;font-size:12px}
+.project-grid{gap:28px}
+.project-card{background:linear-gradient(145deg,#2b2326,#171319 58%,#201417);border:1px solid #a7804777;box-shadow:0 14px 28px #0004,inset 0 0 0 5px #100e12,inset 0 0 0 6px #8d683833;padding:7px}
+.project-card::before,.project-card::after{content:'✥';position:absolute;z-index:2;top:-13px;font-size:27px;color:#cfaa67;text-shadow:0 2px 4px #000;pointer-events:none}
+.project-card::before{left:-8px}.project-card::after{right:-8px}
+.project-card:hover,.project-card:focus-within{border-color:#e0b877;box-shadow:0 14px 35px #0007,inset 0 0 0 5px #100e12,inset 0 0 0 6px #cfa56766}
+.card-art,.project-card:nth-child(3n+2) .card-art,.project-card:nth-child(3n+3) .card-art{height:190px;border:1px solid #ad875444;border-radius:46% 46% 0 0;background:radial-gradient(ellipse at top,#bd8b413b,transparent 68%),repeating-linear-gradient(90deg,transparent 0 48px,#bf974212 49px 51px),#1b151b}
+.card-art::after{background:linear-gradient(0deg,#201a20,transparent 80%)}
+.card-art img{height:270px;filter:saturate(.75);opacity:.95}
+.card-number{left:20px;top:20px;font-size:13px}
+.card-badge{top:auto;bottom:14px;right:14px;background:#391e22e8;border-color:#d2a86266;color:#edcf97;font-size:9px}
+.card-body{padding:18px 19px 20px}
+.project-card h3{font-size:17px;color:#edce94}
+.project-card p{font:16px/1.65 Georgia,serif;color:#c4b8a6}
+.card-meta{flex-wrap:wrap;color:#c6bda9;font-size:12px}
+.card-meta a{font:12px var(--serif);padding:12px 4px;min-height:44px;display:inline-flex;align-items:center}
+.card-meta a::after{content:'';position:absolute;inset:0;z-index:3}
+.all-repos{font:13px/1.6 var(--serif);padding-top:35px}
+.arsenal{background:radial-gradient(ellipse at 20% 50%,#8f693517,transparent 70%);border-block:1px solid #b58e4d5c}
+.arsenal>div>p:not(.eyebrow){font:17px/1.7 Georgia,serif;color:#c6b8a3}
+.language-list>span{background:linear-gradient(135deg,#322227,#171218);border-color:#af854c77;box-shadow:inset 0 0 0 4px #100e12,inset 0 0 0 5px #99734133;min-width:130px;text-align:center;padding:23px;color:#ead09d}
+.language-list small{color:#bcb09b;font-size:11px}
+.about-seal{min-height:330px;border:1px solid #b8945755;border-radius:48% 48% 0 0;box-shadow:inset 0 0 0 9px #100e12,inset 0 0 0 10px #b8945733;background:radial-gradient(ellipse at 50% 25%,#c29c481f,transparent 60%)}
+.about-seal span{font:11px var(--serif);letter-spacing:2px}
+.about p:not(.eyebrow){font:18px/1.8 Georgia,serif;color:#cbbca5}
+.vows{display:grid;gap:14px;margin:28px 0}
+.vows>div{padding:14px 18px;border-left:2px solid #bd9554;background:linear-gradient(90deg,#63403226,transparent)}
+.vows span{display:block;font:10px var(--serif);letter-spacing:2px;color:var(--gold);margin-bottom:6px}
+.vows strong{font:15px var(--serif);color:#e1ccaa}
+.about .vows p{font:15px/1.5 Georgia,serif;margin:6px 0 0}
+.kingdom-closing{max-width:1440px;margin:auto;padding:0 4% 60px;text-align:center}
+.kingdom-closing>img{width:100%;height:auto;border:1px solid #b8905266;box-shadow:0 12px 40px #0007}
+.kingdom-closing>div{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:28px;padding-top:30px}
+.site-footer{background:#0b090d;border-top-color:#b58e4d66;color:#b1a38e;font-size:12px}
+@media(max-width:1050px){.hero-copy{width:75%}.hero-actions{flex-wrap:wrap}.project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.realm{height:auto;min-height:850px}.realm[data-phase='idle']::after{inset:137px 12px 12px}.hero-copy{padding:210px 7% 175px;width:100%}.environment{background-position:63% center}.scene-vignette{background:linear-gradient(90deg,#0d0a0deb,#0d0a0d80),linear-gradient(0deg,#100e12,transparent 50%)}.site-header nav{background:#100d11e8;gap:20px}.site-header nav a{font-size:11px}.hero-description{font-size:18px}.hero-copy .eyebrow{font-size:9px;letter-spacing:1.4px}.section-wrap{padding:65px 7%}.project-toolbar{padding:0 12px}.royal-motto{gap:12px}.about-seal{display:none}.section-heading>p{font-size:16px}.filters{gap:18px}.filters button{font-size:11px}.kingdom-closing{padding-inline:0}.kingdom-closing>div{padding-inline:20px}.scene-controls button{color:#cbbca5;min-height:44px}.experience-note{font-size:9px}.project-card h3{font-size:16px}.hero-copy h1{font-size:clamp(40px,9vw,65px)}}
+@media(max-width:540px){.project-grid{grid-template-columns:1fr}.card-art{height:190px}.realm-status{display:none}.brand{font-size:14px}.brand small{letter-spacing:1px}.github-link span{margin-left:5px}.royal-motto p{letter-spacing:1px}.language-list{width:100%}.language-list>span{flex:1;min-width:120px}.hero-actions{gap:20px}.site-footer{justify-content:center;text-align:center}}

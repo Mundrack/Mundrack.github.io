@@ -98,7 +98,7 @@ function renderProjects() {
       meta = create("div", "card-meta"),
       language = create("span", "", repo.language);
     language.prepend(create("i", "language-dot"));
-    const link = create("a", "", "↗");
+    const link = create("a", "", "Explorar ↗");
     link.href = repo.url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";

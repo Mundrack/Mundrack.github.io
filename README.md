@@ -15,7 +15,7 @@ Vista previa: http://127.0.0.1:4173. El servidor escucha solamente en esta máqu
 
 ## Experiencia
 
-- Portada, escenario original, escudo, niebla y brasas.
+- Portada de catedral con arte original, oro envejecido, carmesí y tipografía medieval. Tarjetas de proyectos con marcos ornamentales y enlaces que abarcan cada tarjeta, juramento del reino, especialidades y cierre ilustrado. Texto principal en HTML, diseños adaptados a móvil y navegación con teclado.
 - Secuencia de 50 segundos: acercamiento lejano → seguimiento de la tropa desde atrás → choque → primera persona → vista aérea → dragón y fuego → final.
 - 16 combatientes con modelos glTF texturizados: caballero de piacenti y zombie de Pixelhouse. Esqueletos independientes, mezcla de animaciones, espada y escudo; brazos de la misma armadura en primera persona.
 - Duelo opcional: «Tomar la espada» durante el combate. F ataca; mantener G bloquea. En móvil los botones atacan y alternan el bloqueo. «Volver a la cinemática» devuelve el control automático.
@@ -50,6 +50,7 @@ Referencias: [API de repositorios](https://docs.github.com/en/rest/repos/repos),
 ```text
 index.html                contenido y navegación
 css/realm.css             diseño, adaptación y transiciones
+css/cathedral.css         tema gótico, tarjetas y portada de catedral
 js/app.js                 interfaz y tarjetas
 js/data.js                GitHub, caché y respaldo
 css/battle.css            controles 3D y etiquetas ancladas

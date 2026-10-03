@@ -46,3 +46,14 @@ Use case: stylized-concept. Asset type: isolated full-body enemy character for c
 Archivo: `assets/dragon.webp`
 
 Use case: stylized-concept. Asset type: isolated dragon cinematic 2.5D website foreground. A single immense original black obsidian dragon, full body including both enormous outstretched bat wings, curved tail, four clawed legs, long serpentine neck, crowned horned head angled downward to LEFT with mouth open and subtle glowing ember throat but NO external fire jet. Three-quarter view flying toward viewer and left, dramatic majestic pose. Charcoal armored scales, aged bronze ridges, dark burgundy translucent wing membranes, warm orange highlights from below, cold moonlight rim. Extremely detailed cinematic photoreal fantasy concept art. All wing tips and tail within frame, generous clear margin. No background, no landscape, no people, no text. True transparent background.
+
+## Catedral del reino (octubre de 2026)
+
+- `assets/cathedral-sanctuary.png`: ilustración original generada para esta web con ImageGen. Fondo de portada; título y controles son HTML independiente. 1672 × 941 píxeles.
+- `assets/cathedral-finale.png`: ilustración original reutilizada del repositorio de perfil Mundrack, generada para el mismo proyecto. 2172 × 724 píxeles. Incluye el lema del reino y dispone de texto alternativo en HTML.
+
+Estas ilustraciones son arte de presentación y no representan la calidad actual del motor 3D. No se modificaron los modelos ni sus animaciones en esta actualización.
+
+Prompt de la nueva portada:
+
+> Use case: stylized-concept. Original premium gothic medieval dark fantasy website background, wide landscape 16:9. A glorious cathedral sanctuary of black stone, ornate aged gold tracery, crimson banners, candles, dramatic golden shafts through a huge rose window. RIGHT HALF: an imposing original black and gold armored knight holding a sword downward, distant view down the vast nave, heroic solemn presence. LEFT HALF: quiet very dark shadowed architectural negative space suitable for overlaid real HTML headline, no bright highlights behind text. Intricate carved pillars and pointed arches frame both edges, embers and faint mist, cinematic painterly realism, rich crafted materials with restrained visual noise. Camera at human height, epic scale. No text, no lettering, no logos, no watermark, no UI, no border drawn across the image center. Full bleed artwork.
