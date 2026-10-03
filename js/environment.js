@@ -8,10 +8,14 @@ export function terrainHeight(x, z) {
   return -.08 + Math.max(edge, distant) * (1.7 + Math.sin(x * .17) * Math.cos(z * .12) * 1.4);
 }
 
-export function dressBattlefield(scene) {
+export function dressBattlefield(scene, maps = [], terrainMaps = []) {
   const group = new T.Group(); group.name = 'Battlefield scenery'; scene.add(group);
-  const stone = new T.MeshStandardMaterial({ color: 0x414345, roughness: .94 });
-  const darkStone = new T.MeshStandardMaterial({ color: 0x292e33, roughness: 1 });
+  const stone = new T.MeshStandardMaterial({ color: 0x77706a, roughness: .94, map: maps?.[0] || null, normalMap: maps?.[1] || null, roughnessMap: maps?.[2] || null });
+  const cliffMaps = terrainMaps.slice(0, 2).map(texture => {
+    const copy = texture.clone(); copy.repeat.set(3, 3); return copy;
+  });
+  const darkStone = new T.MeshStandardMaterial({ color: 0x696d70, roughness: 1,
+    map: cliffMaps[0] || null, normalMap: cliffMaps[1] || null });
   const dummy = new T.Object3D();
   const random = n => { const value = Math.sin(n * 127.1 + 311.7) * 43758.5453; return value - Math.floor(value); };
   // Two ridgelines, with different heights and depths, frame the fortress.

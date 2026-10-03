@@ -21,7 +21,17 @@ Atribución visible para visitantes en `credits.html`, enlazada desde el pie. No
 - `assets/models/dragon.glb`: **Cethiel's Dragon 3D**, por **Cethiel y Drummyfish**, https://opengameart.org/content/cethiels-dragon-3d . Fuente: https://opengameart.org/sites/default/files/dragon_oga.zip . Cambios: textura oscura, reconstrucción de materiales, subdivisión y suavizado de geometría, animación propia de vuelo, pose de alas y emisor de fuego ligado a la mandíbula. Exportación GLB con Blender.
 - `assets/textures/ground-*.jpg`: **Brown Mud Rocks 01**, por **Rob Tuytel / Poly Haven**, https://polyhaven.com/a/brown_mud_rocks_01 . Mapas JPEG de 1K: Diffuse, nor_gl y Rough, sin modificaciones. Licencia: https://polyhaven.com/license .
 
-Ambos recursos se ofrecen bajo CC0: https://creativecommons.org/publicdomain/zero/1.0/ . Los tres GLB y los mapas del terreno suman aproximadamente 10,4 MB, cargados al iniciar la batalla.
+Ambos recursos se ofrecen bajo CC0: https://creativecommons.org/publicdomain/zero/1.0/ . Tras la revisión visual de octubre, los tres GLB y los mapas del terreno y fortaleza suman aproximadamente 16,5 MB, cargados al iniciar la batalla.
+
+## Revisión visual 3D · octubre de 2026
+
+- `assets/textures/castle-*.jpg`: **Castle Wall Slates**, por **Rob Tuytel / Poly Haven**, https://polyhaven.com/a/castle_wall_slates . Licencia CC0: https://polyhaven.com/license . Mapas originales Diffuse, nor_gl y Rough de 1K descargados mediante https://api.polyhaven.com/files/castle_wall_slates ; sin modificaciones.
+- Caballero: acabado del metal ajustado y capa carmesí con tejido procedural y pesos ligados al pecho. No hay simulación de tela.
+- Zombie: tabardo irregular con suciedad en colores de vértices, tejido y cinturón. Se conserva la base de Pixelhouse y su animación; es una adaptación de vestuario, no un modelo nuevo.
+- Dragón: un nivel adicional de subdivisión de geometría, mapa normal procedural de escamas, rugosidad ajustada y material independiente de membranas carmesí. Se conserva el diseño estilizado original y las animaciones.
+- `js/fortress.js`: arquitectura original por código: arcos con profundidad, rosetón, reja, torres, columnas, pavimento y braseros. Geometría estática agrupada en cinco materiales para reducir llamadas de dibujo.
+
+Las fuentes de las tres adaptaciones conservan sus licencias y atribuciones anteriores. `scripts/refine-models.py` reproduce las modificaciones con Blender 4.5 partiendo de los GLB del commit `7150f0f`; recibe carpetas de origen, salida y vistas de inspección. `scripts/export-scenery.mjs` exporta la geometría del escenario para inspección independiente. Los renders de Blender sirven para inspeccionar geometría y materiales; no sustituyen una prueba de WebGL ni una medición de rendimiento en el navegador.
 
 ## background
 

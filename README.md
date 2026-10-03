@@ -22,6 +22,7 @@ Vista previa: http://127.0.0.1:4173. El servidor escucha solamente en esta máqu
 - Los ataques tienen tiempo de preparación, ventana de impacto, alcance, recuperación y daño. Los rivales buscan otro enemigo al terminar un duelo. No se usa colisión por triángulos ni física de cuerpos rígidos.
 - La recuperación del ataque conserva su pose al mezclarse con reposo. Los pasos se sincronizan con distancia recorrida, los giros se amortiguan y un ataque iniciado termina antes de perseguir al rival.
 - El mapa incorpora relieve fuera del corredor de combate, acantilados en varias profundidades, escombros y hierba seca mediante instancias reutilizadas.
+- Fortaleza gótica con piedra PBR, portada profunda, rosetón, reja, torres, columnas, braseros y pavimento roto. Caballeros con capa carmesí, zombis con tabardo y cinturón, dragón con escamas y membranas diferenciadas. Las animaciones se conservan; no hay física de tela. La dirección visual sigue siendo estilizada, no fotorealista.
 - Etiquetas pequeñas sobre los soldados caídos, proyectadas desde su posición 3D. Se ocultan si quedan fuera del encuadre o se solapan; todos los proyectos siguen disponibles en la galería.
 - Cámara seleccionable: cinemática, espaldas, primera persona o aérea. La primera persona requiere un soldado vivo y la fase de combate.
 - Pausa, continuación, salto, repetición y sonido sintetizado opcional, apagado inicialmente.
@@ -60,6 +61,7 @@ js/models.js              geometría auxiliar y rigs de prueba
 js/characters.js          carga glTF, esqueletos y animaciones
 js/fire.js                partículas de fuego desde la mandíbula
 js/environment.js         relieve, acantilados, escombros y vegetación
+js/fortress.js            arquitectura gótica agrupada por material
 assets/models/*.glb        personajes con texturas y animaciones
 assets/textures/*.jpg      materiales del terreno
 credits.html              atribución de los recursos CC-BY 3.0 y CC0
@@ -77,7 +79,7 @@ Los cuatro recursos se generaron con ImageGen. Los prompts y las ubicaciones est
 
 La batalla usa **personajes 3D texturizados con esqueletos**, publicados bajo CC-BY 3.0. Se reconstruyeron los materiales del caballero y se añadieron cinco animaciones propias (reposo, carrera, ataque, bloqueo y caída). El zombie conserva las animaciones de caminar, furia y muerte de Pixelhouse, convertidas desde FBX 6.1. Las licencias, modificaciones y fuentes están en `ASSETS.md` y en la página pública de créditos. Los dos GLB suman aproximadamente 6,6 MB y se cargan al iniciar la batalla.
 
-El dragón usa el modelo texturizado CC0 de Cethiel y Drummyfish, con una animación de vuelo propia y fuego que sale de un punto ligado a la mandíbula. La cámara le dedica el plano final. El terreno usa mapas de color, normales y rugosidad de Brown Mud Rocks 01 (Rob Tuytel / Poly Haven, CC0). Los tres modelos y los mapas del terreno suman unos 10,4 MB.
+El dragón usa el modelo texturizado CC0 de Cethiel y Drummyfish, con una animación de vuelo propia y fuego que sale de un punto ligado a la mandíbula. La cámara le dedica el plano final. El terreno usa mapas de color, normales y rugosidad de Brown Mud Rocks 01 (Rob Tuytel / Poly Haven, CC0). Los tres modelos y los mapas del terreno y fortaleza suman unos 16,5 MB. La carga adicional corresponde al detalle del dragón y los materiales de piedra.
 
 Este paso mejora los personajes, pero no alcanza calidad de película: la animación del caballero es artesanal, el zombie tiene ropa contemporánea y el dragón es estilizado. Falta revisión visual en el navegador y pulir la coreografía. Los golpes usan partículas discretas; el sonido sigue siendo sintetizado. No se utilizó Mixamo.
 

@@ -3,6 +3,7 @@ import { knightModel, dragonModel, pose, mesh, palette } from "./models.js";
 import { chapter, smooth, clamp } from "./combat.js";
 import { Character, Dragon } from "./characters.js";
 import { RoomEnvironment } from "./vendor/RoomEnvironment.js";
+import { buildFortress } from "./fortress.js";
 import { DragonFire } from "./fire.js";
 import { terrainHeight, dressBattlefield } from "./environment.js";
 
@@ -29,16 +30,16 @@ export class BattleWorld {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = T.PCFSoftShadowMap;
     this.renderer.toneMapping = T.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.25;
+    this.renderer.toneMappingExposure = 1.05;
     this.scene = new T.Scene();
     this.scene.background = new T.Color(0x202d32);
-    this.scene.fog = new T.FogExp2(0x263439, 0.017);
+    this.scene.fog = new T.FogExp2(0x33343b, 0.012);
     if (this.renderer.isWebGLRenderer) {
       const room = new RoomEnvironment();
       const pmrem = new T.PMREMGenerator(this.renderer);
       this.environment = pmrem.fromScene(room, .06);
       this.scene.environment = this.environment.texture;
-      this.scene.environmentIntensity = .65;
+      this.scene.environmentIntensity = .48;
       room.dispose();
       pmrem.dispose();
     }
@@ -57,7 +58,8 @@ export class BattleWorld {
     this.lighting();
     this.sky();
     this.terrain();
-    dressBattlefield(this.scene);
+    dressBattlefield(this.scene, this.characters?.castle, this.characters?.ground);
+    buildFortress(this.scene, this.characters?.castle);
     this.buildDragon();
     this.fire = new DragonFire(this.scene);
     this.fireOrigin = new T.Vector3();
@@ -65,11 +67,11 @@ export class BattleWorld {
     this.firstPerson();
   }
   lighting() {
-    this.scene.add(new T.HemisphereLight(0xb0c8d5, 0x3c3023, 2.3));
+    this.scene.add(new T.HemisphereLight(0xb0c0d5, 0x3c3023, 1.3));
     const sun = new T.DirectionalLight(0xf5c28b, 3.2);
     sun.position.set(-15, 23, -20);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, {
       left: -21,
       right: 21,
@@ -78,9 +80,10 @@ export class BattleWorld {
       near: 1,
       far: 75,
     });
-    sun.shadow.bias = -0.001;
+    sun.shadow.bias = -0.0003;
+    sun.shadow.normalBias = .035;
     this.scene.add(sun);
-    const rim = new T.DirectionalLight(0x80a6cf, 1.8);
+    const rim = new T.DirectionalLight(0x80a6cf, 1.35);
     rim.position.set(10, 9, 14);
     this.scene.add(rim);
     this.fireLight = new T.PointLight(0xff7628, 0, 32, 2);
@@ -154,39 +157,6 @@ export class BattleWorld {
     }
     rocks.receiveShadow = true;
     this.scene.add(rocks);
-    // Distant architecture remains 3D so camera travel preserves parallax.
-    for (let i = 0; i < 11; i++) {
-      const x = (i - 5) * 4.8,
-        h = 5 + (i % 3) * 3;
-      mesh(
-        this.scene,
-        new T.CylinderGeometry(1.05, 1.5, h, 8),
-        palette.ground,
-        [x, h / 2, -37],
-      );
-      mesh(this.scene, new T.ConeGeometry(1.45, 4, 8), palette.dark, [
-        x,
-        h + 2,
-        -37,
-      ]);
-      if (i < 10)
-        mesh(this.scene, new T.BoxGeometry(4, 4, 0.9), palette.ground, [
-          x + 2.4,
-          2,
-          -37,
-        ]);
-    }
-    // Repeated stone battlements retain depth during the camera approach.
-    const battlements = new T.InstancedMesh(new T.BoxGeometry(.6, .85, .7), palette.ground, 88);
-    const stone = new T.Object3D();
-    for (let i = 0; i < 88; i++) {
-      const tower = Math.floor(i / 8), angle = i % 8 * Math.PI / 4;
-      const h = 5 + (tower % 3) * 3;
-      stone.position.set((tower - 5) * 4.8 + Math.cos(angle) * 1.18, h + .1, -37 + Math.sin(angle) * 1.18);
-      stone.rotation.y = -angle;
-      stone.updateMatrix(); battlements.setMatrixAt(i, stone.matrix);
-    }
-    this.scene.add(battlements);
     this.flags = [];
     for (const x of [-12, 12])
       for (const z of [-10, 7]) {

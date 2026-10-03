@@ -21,6 +21,13 @@ export async function loadCharacters() {
     if (name === 'diffuse') texture.colorSpace = T.SRGBColorSpace;
     return texture;
   }));
+  library.castle = await Promise.all(['diffuse', 'nor_gl', 'rough'].map(async name => {
+    const texture = await textureLoader.loadAsync(new URL(`../assets/textures/castle-${name}.jpg`, import.meta.url).href);
+    texture.wrapS = texture.wrapT = T.RepeatWrapping;
+    texture.anisotropy = 4;
+    if (name === 'diffuse') texture.colorSpace = T.SRGBColorSpace;
+    return texture;
+  }));
   return library;
 }
 

@@ -23,7 +23,7 @@ async function asset(name) {
   json.buffers[0].uri = `data:application/octet-stream;base64,${binary.toString('base64')}`;
   // CPU-only inspection of actual shipped geometry and animation. Texture
   // decoding and GPU rendering require the browser and are not tested here.
-  json.materials = [{ pbrMetallicRoughness: { baseColorFactor: [.5, .5, .5, 1] } }];
+  json.materials = json.materials.map(() => ({ pbrMetallicRoughness: { baseColorFactor: [.5, .5, .5, 1] } }));
   json.images = []; json.textures = [];
   return new GLTFLoader().parseAsync(JSON.stringify(json), '');
 }
@@ -62,8 +62,8 @@ test('first-person armor contains only arm triangles and shares animation withou
   const gltf = await asset('knight');
   const full = new Character(gltf, 'knight'), arms = new Character(gltf, 'knight', { firstPerson: true });
   let fullMesh, armMesh;
-  full.root.traverse(o => { if (o.isSkinnedMesh) fullMesh = o; });
-  arms.root.traverse(o => { if (o.isSkinnedMesh) armMesh = o; });
+  full.root.traverse(o => { if (o.isSkinnedMesh && (!fullMesh || o.geometry.attributes.position.count > fullMesh.geometry.attributes.position.count)) fullMesh = o; });
+  arms.root.traverse(o => { if (o.isSkinnedMesh && (!armMesh || o.geometry.attributes.position.count > armMesh.geometry.attributes.position.count)) armMesh = o; });
   assert.ok(armMesh.geometry.index.count > 100);
   assert.ok(armMesh.geometry.index.count < fullMesh.geometry.index.count * .6);
   assert.notEqual(armMesh.geometry, fullMesh.geometry);
