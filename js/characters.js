@@ -1,6 +1,7 @@
 import * as T from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { clone } from './vendor/SkeletonUtils.js';
+import { groundHeight } from './ground.js';
 
 export async function loadCharacters() {
   const loader = new GLTFLoader();
@@ -55,9 +56,12 @@ function armsOnly(mesh) {
 export class Character {
   constructor(asset, team, { firstPerson = false } = {}) {
     this.team = team;
+    this.firstPerson = firstPerson;
     this.root = new T.Group();
     this.visual = clone(asset.scene);
-    this.visual.rotation.y = Math.PI;
+    // Knight is authored facing +Z; the zombie is authored facing +X.
+    // Combat yaw zero always faces -Z.
+    this.visual.rotation.y = team === 'zombie' ? Math.PI / 2 : Math.PI;
     this.root.add(this.visual);
     this.visual.traverse(o => {
       if (!o.isMesh) return;
@@ -75,6 +79,34 @@ export class Character {
       this.actions.set(clip.name, action);
     }
     this.previousTime = null;
+    this.contactSamples = [];
+    this.bodySamples = [];
+    this.contactPoint = new T.Vector3();
+    if (!firstPerson) {
+      this.root.updateMatrixWorld(true);
+      this.visual.traverse(mesh => {
+        if (!mesh.isSkinnedMesh) return;
+        const indices=mesh.geometry.attributes.skinIndex, weights=mesh.geometry.attributes.skinWeight;
+        const bodyIndices=[];
+        for(let i=0;i<indices.count;i+=Math.max(1,Math.floor(indices.count/256))) bodyIndices.push(i);
+        this.bodySamples.push({mesh,indices:bodyIndices});
+        const feet=new Set(mesh.skeleton.bones.map((b,i)=> /foot|toe/i.test(b.name) ? i : -1));
+        const candidates=[];
+        mesh.skeleton.update();
+        for (let i=0;i<indices.count;i++) {
+          let weight=0;
+          for(let k=0;k<4;k++) if(feet.has(indices.array[i*4+k])) weight+=weights.array[i*4+k];
+          if(weight>=.5) {
+            mesh.getVertexPosition(i,this.contactPoint).applyMatrix4(mesh.matrixWorld);
+            candidates.push({index:i,key:this.contactPoint.toArray().map(v=>v.toFixed(5)).join(',')});
+          }
+        }
+        // UV/normal seams duplicate positions; keep every distinct foot surface
+        // point so heels and toes remain supported while the ankle rolls.
+        const soles=[...new Map(candidates.map(v=>[v.key,v.index])).values()];
+        if(soles.length) this.contactSamples.push({mesh,indices:soles});
+      });
+    }
   }
   pose(unit, time) {
     const dead = unit.deadAt !== null;
@@ -106,6 +138,24 @@ export class Character {
     this.visual.rotation.x = dead ? 0 : -(unit.recoil || 0) * .09;
     this.visual.position.z = !dead && this.team === 'knight' && unit.attack >= 0
       ? -.35 * Math.sin(Math.min(1, unit.attack) * Math.PI) : 0;
+    if (!this.firstPerson) {
+      this.root.position.y = groundHeight(unit.x,unit.z);
+      const samples=dead ? this.bodySamples : this.contactSamples;
+      if (samples.length) {
+        this.root.updateMatrixWorld(true);
+        let lift=-Infinity;
+        for(const {mesh,indices} of samples) {
+          mesh.skeleton.update();
+          for(const i of indices) {
+            mesh.getVertexPosition(i,this.contactPoint).applyMatrix4(mesh.matrixWorld);
+            lift=Math.max(lift,groundHeight(this.contactPoint.x,this.contactPoint.z)-this.contactPoint.y);
+          }
+        }
+        // Both foot meshes participate: the lower supporting sole touches the
+        // actual soil/paving. No cumulative offset and no hand-driven bounds.
+        if(Number.isFinite(lift)) this.root.position.y+=lift+.004;
+      }
+    }
     this.previousTime = time;
     this.lastPosition = { x: unit.x, z: unit.z };
   }

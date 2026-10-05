@@ -1,12 +1,10 @@
 import * as T from './vendor/three.module.js';
+import { terrainHeight } from './ground.js';
+import { plantVegetation } from './vegetation.js';
+export { terrainHeight } from './ground.js';
 
 // Deterministic scenery: the combat corridor stays clear, with layered relief
 // beyond it. Instances keep repeated grass and rubble inexpensive to draw.
-export function terrainHeight(x, z) {
-  const edge = T.MathUtils.smoothstep(Math.abs(x), 12, 30);
-  const distant = T.MathUtils.smoothstep(Math.abs(z), 22, 60);
-  return -.08 + Math.max(edge, distant) * (1.7 + Math.sin(x * .17) * Math.cos(z * .12) * 1.4);
-}
 
 export function dressBattlefield(scene, maps = [], terrainMaps = []) {
   const group = new T.Group(); group.name = 'Battlefield scenery'; scene.add(group);
@@ -52,5 +50,6 @@ export function dressBattlefield(scene, maps = [], terrainMaps = []) {
     dummy.updateMatrix(); grass.setMatrixAt(i, dummy.matrix);
   }
   grass.receiveShadow = true; group.add(grass);
+  plantVegetation(group);
   return group;
 }

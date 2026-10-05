@@ -1,5 +1,6 @@
 import * as T from './vendor/three.module.js';
 import { mergeGeometries } from './vendor/BufferGeometryUtils.js';
+import { paving } from './ground.js';
 
 // Static architecture is merged by material: depth and detail without hundreds
 // of individual draw calls. All dimensions are in battlefield metres.
@@ -33,11 +34,10 @@ export function buildFortress(scene, maps = []) {
   }
   const box = (w, h, d, material, x, y, z) => add(new T.BoxGeometry(w, h, d), material, x, y, z);
   // Broken processional paving, flush with the actors' ground plane.
-  for (let row = 0; row < 30; row++) for (let col = 0; col < 6; col++) {
-    if ((row * 13 + col * 7) % 11 < 3) continue;
+  for (const tile of paving) {
     const g = new T.BoxGeometry(1.05, .075, 1.35);
-    g.rotateY(Math.sin(row * 9 + col * 3) * .025);
-    add(g, stone, (col - 2.5) * 1.15 + (row % 2) * .22, -.0375, 13 - row * 1.55);
+    g.rotateY(tile.angle);
+    add(g, stone, tile.x, -.0375, tile.z);
   }
   // A pointed Gothic opening, built as a real extruded ring, not a painted wall.
   function arch(x, y, z, width, height, thickness, material) {

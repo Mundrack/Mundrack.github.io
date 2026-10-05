@@ -25,6 +25,12 @@ Ambos recursos se ofrecen bajo CC0: https://creativecommons.org/publicdomain/zer
 
 ## Revisión visual 3D · octubre de 2026
 
+### Vegetación y apoyo · 5 de octubre
+
+`js/vegetation.js` genera geometría original de troncos, ramas, hojas, arbustos y césped; no incorpora recursos de terceros ni nuevas descargas. Las mismas losas definidas en `js/ground.js` se utilizan para dibujar el pavimento y apoyar los personajes.
+
+El caballero mantiene la geometría y materiales atribuidos a piacenti. `scripts/correct-knight-grips.py` corrige los canales de brazos/manos que confundían la espada y el escudo; conserva la duración de los clips del GLB del commit `7be7c15`. Incluye una postura de guardia con el escudo frente al torso. Uso: Blender 4.5, seguido de `-- INPUT.glb OUTPUT.glb`. Ejecutar sobre el original de ese commit, no sobre una salida ya corregida. Los zombis se orientan en ejecución según el eje +X de su modelo; no se reexportan sus animaciones.
+
 - `assets/textures/castle-*.jpg`: **Castle Wall Slates**, por **Rob Tuytel / Poly Haven**, https://polyhaven.com/a/castle_wall_slates . Licencia CC0: https://polyhaven.com/license . Mapas originales Diffuse, nor_gl y Rough de 1K descargados mediante https://api.polyhaven.com/files/castle_wall_slates ; sin modificaciones.
 - Caballero: acabado del metal ajustado y capa carmesí con tejido procedural y pesos ligados al pecho. No hay simulación de tela.
 - Zombie: tabardo irregular con suciedad en colores de vértices, tejido y cinturón. Se conserva la base de Pixelhouse y su animación; es una adaptación de vestuario, no un modelo nuevo.

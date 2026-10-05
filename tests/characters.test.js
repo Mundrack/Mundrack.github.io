@@ -8,6 +8,7 @@ import { DragonFire } from '../js/fire.js';
 import { Scene } from '../js/vendor/three.module.js';
 import { BattleWorld } from '../js/battle-world.js';
 import { Combat } from '../js/combat.js';
+import { groundHeight } from '../js/ground.js';
 
 globalThis.ProgressEvent ??= class { constructor(type, init) { Object.assign(this, { type }, init); } };
 
@@ -33,6 +34,58 @@ function bounds(actor) {
   return new Box3().setFromObject(actor.root);
 }
 const unit = { x: 0, z: 0, yaw: 0, attack: -1, deadAt: null, pair: 0, recoil: 0, moving: false };
+
+test('actual animated foot geometry contacts soil and paving through a walking cycle', async () => {
+  for (const team of ['knight','zombie']) {
+    const actor=new Character(await asset(team),team), point=new Vector3();
+    for (const x of [0,6]) for (let frame=0;frame<12;frame++) {
+      actor.pose({...unit,x,z:frame*.14,yaw:.4,moving:true},frame/12);
+      actor.root.updateMatrixWorld(true);
+      let minimum=Infinity;
+      actor.visual.traverse(mesh=> {
+        if(!mesh.isSkinnedMesh) return;
+        mesh.skeleton.update();
+        const indices=mesh.geometry.attributes.skinIndex,weights=mesh.geometry.attributes.skinWeight;
+        const feet=new Set(mesh.skeleton.bones.map((b,i)=>/foot|toe/i.test(b.name)?i:-1));
+        // Inspect every foot vertex, independently of the production contact sampler.
+        for(let i=0;i<indices.count;i++) {
+          let weight=0;for(let k=0;k<4;k++)if(feet.has(indices.array[i*4+k]))weight+=weights.array[i*4+k];
+          if(weight<.5)continue;
+          mesh.getVertexPosition(i,point).applyMatrix4(mesh.matrixWorld);
+          minimum=Math.min(minimum,point.y-groundHeight(point.x,point.z));
+        }
+      });
+      assert.ok(minimum>=-.035 && minimum<=.025,`${team} support gap ${minimum} at ${frame}`);
+    }
+  }
+});
+
+test('authored zombie front and knight front both follow combat heading',async()=> {
+  for(const team of ['knight','zombie']) {
+    const actor=new Character(await asset(team),team);
+    for(const yaw of [0,Math.PI/2,Math.PI,-Math.PI/2]) {
+      actor.pose({...unit,yaw},0);actor.root.updateMatrixWorld(true);
+      // Anatomical forward axis in the shipped bind mesh, not a shared placeholder axis.
+      const forward=new Vector3(team==='zombie'?1:0,0,team==='knight'?1:0).transformDirection(actor.visual.matrixWorld);
+      assert.ok(forward.dot(new Vector3(-Math.sin(yaw),0,-Math.cos(yaw)))>.99);
+    }
+  }
+});
+
+test('sword strikes while the shield stays in front during guard',async()=> {
+  const actor=new Character(await asset('knight'),'knight');
+  const sword=actor.visual.getObjectByName('leftHand'),shield=actor.visual.getObjectByName('rightHand');
+  const points=[];
+  for(const attack of [.3,.5]) {
+    actor.reset();actor.pose({...unit,attack},attack);actor.root.updateMatrixWorld(true);
+    points.push(sword.getWorldPosition(new Vector3()));
+  }
+  assert.ok(points[0].distanceTo(points[1])>.2,'authored sword hand follows the strike');
+  actor.reset();actor.pose({...unit,guard:true},0);actor.root.updateMatrixWorld(true);
+  const hand=shield.getWorldPosition(new Vector3());
+  assert.ok(hand.z<-.3 && Math.abs(hand.x)<.5,'shield hand guards the torso rather than extending sideways');
+  assert.ok(Math.abs(actor.actions.get('run').getClip().duration-19/24)<.001,'grip repair preserves the shipped walking clip timing');
+});
 
 test('shipped characters animate at human scale, preserve maps and keep independent skeletons', async () => {
   for (const team of ['knight', 'zombie']) {

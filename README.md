@@ -23,6 +23,8 @@ Vista previa: http://127.0.0.1:4173. El servidor escucha solamente en esta máqu
 - La recuperación del ataque conserva su pose al mezclarse con reposo. Los pasos se sincronizan con distancia recorrida, los giros se amortiguan y un ataque iniciado termina antes de perseguir al rival.
 - El mapa incorpora relieve fuera del corredor de combate, acantilados en varias profundidades, escombros y hierba seca mediante instancias reutilizadas.
 - Fortaleza gótica con piedra PBR, portada profunda, rosetón, reja, torres, columnas, braseros y pavimento roto. Caballeros con capa carmesí, zombis con tabardo y cinturón, dragón con escamas y membranas diferenciadas. Las animaciones se conservan; no hay física de tela. La dirección visual sigue siendo estilizada, no fotorealista.
+- Vegetación original: 28 árboles, 110 arbustos y 4800 grupos de césped, repartidos por los flancos mediante cuatro lotes de instancias. El corredor central permanece despejado.
+- Corrección del eje frontal de los zombis y del agarre del caballero: la espada ataca y el escudo protege el torso con su cara exterior hacia el enemigo. El apoyo vertical se calcula con la geometría animada de los pies y la altura compartida de tierra/losas. Esto corrige la flotación, pero todavía no implementa fijación de cada pie ni una nueva coreografía del caminar.
 - Etiquetas pequeñas sobre los soldados caídos, proyectadas desde su posición 3D. Se ocultan si quedan fuera del encuadre o se solapan; todos los proyectos siguen disponibles en la galería.
 - Cámara seleccionable: cinemática, espaldas, primera persona o aérea. La primera persona requiere un soldado vivo y la fase de combate.
 - Pausa, continuación, salto, repetición y sonido sintetizado opcional, apagado inicialmente.
@@ -62,6 +64,8 @@ js/characters.js          carga glTF, esqueletos y animaciones
 js/fire.js                partículas de fuego desde la mandíbula
 js/environment.js         relieve, acantilados, escombros y vegetación
 js/fortress.js            arquitectura gótica agrupada por material
+js/ground.js              suelo y losas compartidos por geometría y apoyo
+js/vegetation.js          árboles, arbustos y césped por instancias
 assets/models/*.glb        personajes con texturas y animaciones
 assets/textures/*.jpg      materiales del terreno
 credits.html              atribución de los recursos CC-BY 3.0 y CC0
