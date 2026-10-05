@@ -2,6 +2,7 @@ import * as T from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { clone } from './vendor/SkeletonUtils.js';
 import { groundHeight } from './ground.js';
+import { gaitProfile, stationaryClip, FootPlanting } from './locomotion.js';
 
 export async function loadCharacters() {
   const loader = new GLTFLoader();
@@ -73,12 +74,16 @@ export class Character {
     });
     this.mixer = new T.AnimationMixer(this.visual);
     this.actions = new Map();
-    for (const clip of asset.animations) {
+    const clips = [...asset.animations];
+    if (!clips.some(clip => clip.name === 'idle')) clips.push(stationaryClip(clips.find(clip => clip.name === 'walk')));
+    for (const clip of clips) {
       const action = this.mixer.clipAction(clip);
       action.play(); action.weight = 0;
       this.actions.set(clip.name, action);
     }
     this.previousTime = null;
+    this.gait = gaitProfile(asset, team);
+    this.planting = new FootPlanting(this.visual, team, this.gait);
     this.contactSamples = [];
     this.bodySamples = [];
     this.contactPoint = new T.Vector3();
@@ -110,16 +115,15 @@ export class Character {
   }
   pose(unit, time) {
     const dead = unit.deadAt !== null;
-    const state = dead ? 'death' : unit.attack >= 0 ? 'attack' : unit.guard && this.team === 'knight' ? 'guard' : unit.moving ? (this.team === 'knight' ? 'run' : 'walk') : (this.team === 'knight' ? 'idle' : 'walk');
+    const state = dead ? 'death' : unit.attack >= 0 ? 'attack' : unit.moving ? (this.team === 'knight' ? 'run' : 'walk') : unit.guard && this.team === 'knight' ? 'guard' : 'idle';
     const dt = this.previousTime === null ? 0 : Math.max(0, time - this.previousTime);
     const reset = this.previousTime === null || time < this.previousTime;
     const blend = reset ? 1 : 1 - Math.exp(-dt * (dead ? 14 : 10));
     // Keep the outgoing strike at its recovery pose while it fades. Rewinding
     // it to frame zero here made every completed swing visibly snap backwards.
-    if (reset) { this.travelTime = 0; this.lastPosition = { x: unit.x, z: unit.z }; }
+    if (reset) { this.travelTime = 0; this.lastPosition = { x: unit.x, z: unit.z }; this.planting.reset(); }
     const travelled = Math.hypot(unit.x - this.lastPosition.x, unit.z - this.lastPosition.z);
-    this.travelTime += travelled / (this.team === 'knight' ? 3.5 : 1.7);
-    if (!reset && this.team === 'zombie' && !unit.moving) this.travelTime += dt * .13;
+    this.travelTime += travelled * this.gait.duration / this.gait.distance;
     for (const [name, action] of this.actions) {
       action.weight += ((name === state ? 1 : 0) - action.weight) * blend;
       const duration = action.getClip().duration;
@@ -139,7 +143,18 @@ export class Character {
     this.visual.position.z = !dead && this.team === 'knight' && unit.attack >= 0
       ? -.35 * Math.sin(Math.min(1, unit.attack) * Math.PI) : 0;
     if (!this.firstPerson) {
-      this.root.position.y = groundHeight(unit.x,unit.z);
+      this.ground(dead);
+      const locomotion = this.actions.get(this.team === 'knight' ? 'run' : 'walk');
+      const adjusted = this.planting.apply((this.travelTime + unit.pair * .17) / this.gait.duration,
+        !dead && unit.attack < 0 && unit.moving && locomotion.weight > .65 && dt > 0 && dt < .1 && travelled < .3, unit.yaw);
+      if (adjusted) this.ground(dead);
+    }
+    this.previousTime = time;
+    this.lastPosition = { x: unit.x, z: unit.z };
+  }
+  ground(dead) {
+    if (!this.firstPerson) {
+      this.root.position.y = groundHeight(this.root.position.x,this.root.position.z);
       const samples=dead ? this.bodySamples : this.contactSamples;
       if (samples.length) {
         this.root.updateMatrixWorld(true);
@@ -156,8 +171,6 @@ export class Character {
         if(Number.isFinite(lift)) this.root.position.y+=lift+.004;
       }
     }
-    this.previousTime = time;
-    this.lastPosition = { x: unit.x, z: unit.z };
   }
   reset() { this.previousTime = null; }
 }

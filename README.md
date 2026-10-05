@@ -61,6 +61,7 @@ js/scene.js               ciclo de vida, controles, etiquetas y audio
 js/combat.js              simulación determinista, daño y director de escenas
 js/models.js              geometría auxiliar y rigs de prueba
 js/characters.js          carga glTF, esqueletos y animaciones
+js/locomotion.js          zancada medida y apoyo horizontal mediante IK
 js/fire.js                partículas de fuego desde la mandíbula
 js/environment.js         relieve, acantilados, escombros y vegetación
 js/fortress.js            arquitectura gótica agrupada por material
@@ -87,6 +88,8 @@ El dragón usa el modelo texturizado CC0 de Cethiel y Drummyfish, con una animac
 
 Este paso mejora los personajes, pero no alcanza calidad de película: la animación del caballero es artesanal, el zombie tiene ropa contemporánea y el dragón es estilizado. Falta revisión visual en el navegador y pulir la coreografía. Los golpes usan partículas discretas; el sonido sigue siendo sintetizado. No se utilizó Mixamo.
 
+La primera fase de fluidez mide la zancada de los clips incluidos y sincroniza su reproducción con la distancia recorrida. Durante el apoyo, una corrección de las dos articulaciones de cada pierna mantiene el tobillo fijo horizontalmente; el contacto vertical sigue usando la geometría del pie y el terreno. La corrección se libera al atacar, morir, repetir o saltar entre tiempos. Los zombis tienen una pose de reposo independiente y los caballeros no sustituyen la carrera por guardia mientras avanzan. La persecución acelera y frena antes del duelo. Las pruebas CPU comprueban los apoyos y las transiciones; aún falta valorar la fluidez visual y el rendimiento en navegador. La siguiente fase se centra en golpes, bloqueos y reacciones.
+
 Three.js se carga únicamente al iniciar la batalla y está incluido localmente, con licencia MIT. WebGL 2 es necesario para la escena; si no está disponible, se muestra un mensaje y el portfolio permanece accesible. El movimiento reducido evita cargar el motor. La simulación avanza en pasos fijos de 1/60 s y se pausa fuera de pantalla. Los modelos se reutilizan al repetir la batalla.
 
 El fondo anterior `assets/realm-background.png` permanece como referencia; ya no se usa como fondo porque contiene interfaz dibujada. Google Fonts es opcional: hay fuentes de respaldo si falla la conexión.
@@ -104,4 +107,4 @@ La primera orden prueba datos, combate, controles y proyecciones; también carga
 
 Compatible con hosting estático en GitHub Pages, con rutas relativas y el motor incluido en `js/vendor`. Debe publicarse el contenido de la raíz (HTML, CSS, JS, assets y data). No subir `node_modules`, resultados de pruebas ni `assets/sources`.
 
-GitHub Pages publica desde `main`, en la raíz. La versión actual es un prototipo público en evolución; la revisión visual automatizada y de rendimiento sigue pendiente. El propietario autorizó publicar el avance. La próxima etapa es una cinemática medieval prerenderizada y un tráiler para el README del perfil; esos videos todavía no están incluidos.
+GitHub Pages publica desde `main`, en la raíz. La versión actual es un prototipo público en evolución; la revisión visual automatizada y de rendimiento sigue pendiente. El propietario autorizó publicar el avance. Primero se pule la locomoción y después la coreografía de combate. Una cinemática prerenderizada y un tráiler para el perfil son posibilidades futuras; esos videos todavía no están incluidos.

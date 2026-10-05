@@ -35,6 +35,43 @@ function bounds(actor) {
 }
 const unit = { x: 0, z: 0, yaw: 0, attack: -1, deadAt: null, pair: 0, recoil: 0, moving: false };
 
+test('support feet stay horizontally planted during actual forward strides and release for attacks', async t => {
+  for (const team of ['knight', 'zombie']) {
+    const actor = new Character(await asset(team), team);
+    let supported = 0, error = 0;
+    for (let frame = 0; frame < 180; frame++) {
+      const time = frame / 60;
+      actor.pose({ ...unit, z: -time * 1.4, moving: true }, time);
+      actor.root.updateMatrixWorld(true);
+      for (const leg of actor.planting.legs) if (leg.anchor) {
+        const foot = leg.foot.getWorldPosition(new Vector3());
+        error = Math.max(error, Math.hypot(foot.x - leg.anchor.x, foot.z - leg.anchor.z));
+        supported++;
+      }
+    }
+    t.diagnostic(`${team}: stride ${actor.gait.distance.toFixed(3)}m; ${supported} planted samples; max horizontal error ${error.toFixed(6)}m`);
+    assert.ok(supported > 30, 'stance detection must actually engage on the shipped clip');
+    assert.ok(error < .005, 'support ankle stays within 5mm of its world anchor');
+    actor.pose({ ...unit, z: -4.2, attack: .1 }, 3);
+    assert.ok(actor.planting.legs.every(leg => leg.anchor === null));
+    actor.reset(); actor.pose(unit, 0);
+    assert.ok(actor.planting.legs.every(leg => leg.anchor === null));
+  }
+});
+
+test('guard cannot replace running and idle zombies do not keep stepping', async () => {
+  const knight = new Character(await asset('knight'), 'knight');
+  knight.pose({ ...unit, moving: true, guard: true }, 0);
+  assert.equal(knight.actions.get('run').weight, 1);
+  assert.equal(knight.actions.get('guard').weight, 0);
+  const zombie = new Character(await asset('zombie'), 'zombie');
+  zombie.pose(unit, 0);
+  const feet = zombie.planting.legs.map(leg => leg.foot.getWorldPosition(new Vector3()));
+  zombie.pose(unit, 2);
+  zombie.planting.legs.forEach((leg, i) => assert.ok(leg.foot.getWorldPosition(new Vector3()).distanceTo(feet[i]) < 1e-6));
+  assert.equal(zombie.actions.get('walk').weight, 0);
+});
+
 test('actual animated foot geometry contacts soil and paving through a walking cycle', async () => {
   for (const team of ['knight','zombie']) {
     const actor=new Character(await asset(team),team), point=new Vector3();

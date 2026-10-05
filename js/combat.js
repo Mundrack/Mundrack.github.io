@@ -81,6 +81,7 @@ export class Combat {
           deadAt: null,
           recoil: 0,
           guard: false,
+          speed: 0,
           kills: 0,
           repo:
             team === "knight"
@@ -127,7 +128,11 @@ export class Combat {
         u.team === "knight"
           ? 15 + Math.floor(u.pair / 4) * 3
           : -13 - Math.floor(u.pair / 4) * 3;
-      if (this.time <= 13 + delay) u.z = start + (end - start) * advance;
+      if (this.time <= 13 + delay) {
+        u.z = start + (end - start) * advance;
+        const progress = clamp((this.time - 6 - delay) / 7);
+        u.speed = Math.abs(end - start) / 7 * 6 * progress * (1 - progress);
+      }
       u.moving = this.time >= 6 + delay && this.time < 13 + delay;
       u.recoil = Math.max(0, u.recoil - dt * 3);
       u.cooldown -= dt;
@@ -152,6 +157,7 @@ export class Combat {
       if (!opponent) {
         u.attack = -1;
         u.guard = false;
+        u.speed = 0;
         continue;
       }
       const dx = opponent.x - u.x,
@@ -162,10 +168,15 @@ export class Combat {
       u.yaw += turn * (1 - Math.exp(-dt * 9));
       // Commit to the swing before chasing again, and use a small dead band
       // around melee range to avoid flickering between walk and attack.
-      u.moving = u.attack < 0 && distance > (wasMoving ? 1.65 : 1.85);
+      const chasing = u.attack < 0 && distance > (wasMoving ? 1.65 : 1.85);
+      const desiredSpeed = chasing ? Math.min(1.4, Math.sqrt(8 * Math.max(0, distance - 1.55))) : 0;
+      u.speed += clamp(desiredSpeed - u.speed, -4 * dt, 2.5 * dt);
+      if (u.attack >= 0) u.speed = 0;
+      const step = Math.min(u.speed * dt, Math.max(0, distance - 1.55));
+      u.moving = step > .00001;
       if (u.moving) {
-        u.x += (dx / distance) * dt * 1.4;
-        u.z += (dz / distance) * dt * 1.4;
+        u.x += (dx / distance) * step;
+        u.z += (dz / distance) * step;
         continue;
       }
       if (

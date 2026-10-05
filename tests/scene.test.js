@@ -67,6 +67,31 @@ test("cinematic director visits distant, follow, duel and overhead views in orde
     ["wide", "follow", "side", "first", "overhead", "dragon", "overhead"],
   );
 });
+test("pursuit accelerates gradually, brakes before contact and never strikes while advancing", () => {
+  const sim = new Combat([]);
+  sim.time = 30;
+  sim.units = sim.units.slice(0, 2);
+  const [knight, zombie] = sim.units;
+  knight.z = 3; zombie.z = -3;
+  knight.cooldown = zombie.cooldown = 100;
+  let movingFrames = 0, brakingFrames = 0;
+  for (let frame = 0; frame < 360; frame++) {
+    const previous = sim.units.map(u => ({ speed: u.speed, x: u.x, z: u.z }));
+    sim.step(1 / 60);
+    sim.units.forEach((u, i) => {
+      const delta = u.speed - previous[i].speed;
+      assert.ok(delta <= 2.5 / 60 + 1e-8 && delta >= -4 / 60 - 1e-8);
+      if (u.moving) movingFrames++;
+      if (delta < -.001) brakingFrames++;
+      assert.ok(!(u.moving && u.attack >= 0));
+    });
+    assert.ok(Math.hypot(knight.x - zombie.x, knight.z - zombie.z) >= 1.55 - 1e-8);
+  }
+  assert.ok(movingFrames > 20 && brakingFrames > 2);
+  assert.equal(knight.moving, false);
+  assert.equal(zombie.moving, false);
+});
+
 test("combat only damages opponents at a contact window and blocking reduces damage", () => {
   const sim = new Combat(repos),
     hits = [];
