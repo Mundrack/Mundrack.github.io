@@ -1,3 +1,4 @@
+import { CONTACT } from './fight-motion.js';
 export const DURATION = 50;
 export const clamp = (x, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, x));
 export const smooth = (x) => {
@@ -77,6 +78,10 @@ export class Combat {
           yaw: team === "knight" ? 0 : Math.PI,
           attack: -1,
           hit: false,
+          targetId: null,
+          hitAt: -Infinity,
+          blockedHit: false,
+          hitDirection: { x: 0, z: 1 },
           cooldown: pair * 0.21 + (team === "zombie" ? 0.8 : 0),
           deadAt: null,
           recoil: 0,
@@ -105,6 +110,7 @@ export class Combat {
     ) {
       u.attack = 0;
       u.hit = false;
+      u.targetId = null;
       return true;
     }
     return false;
@@ -144,16 +150,19 @@ export class Combat {
           this.time >= 13 + (other.pair < 4 ? 0 : other.pair < 6 ? 8 : 13) &&
           !(other.pair === 0 && u.pair !== 0 && this.time < 32),
       );
-      const opponent =
-        enemies.find((other) => other.pair === u.pair) ||
+      const opponent = (u.attack >= 0 && u.targetId
+        ? enemies.find(other => other.id === u.targetId)
+        : enemies.find((other) => other.pair === u.pair) ||
         enemies.sort(
           (a, b) =>
             Math.hypot(a.x - u.x, a.z - u.z) - Math.hypot(b.x - u.x, b.z - u.z),
-        )[0];
-      u.guard =
-        u === this.player && this.manual
-          ? this.blocking
-          : Math.floor(this.time * 1.4 + u.pair) % 5 === 0;
+        )[0]);
+      // Defend against a visible wind-up, not an unrelated global timer.
+      u.guard = u.team === 'knight' && u.attack < 0 && !u.moving &&
+        (u === this.player && this.manual ? this.blocking :
+          opponent?.attack >= .08 && opponent.attack < .65 &&
+          Math.hypot(opponent.x - u.x, opponent.z - u.z) < 2.5 &&
+          (u.pair + Math.floor(this.time / 2)) % 3 === 0);
       if (!opponent) {
         u.attack = -1;
         u.guard = false;
@@ -182,18 +191,24 @@ export class Combat {
       if (
         u.attack < 0 &&
         u.cooldown <= 0 &&
+        !u.guard &&
+        this.time - u.hitAt > (u.blockedHit ? .12 : .28) &&
         !(u === this.player && this.manual)
       ) {
         u.attack = 0;
         u.hit = false;
+        u.targetId = opponent.id;
       }
       if (u.attack >= 0) {
+        u.targetId ??= opponent.id;
         u.attack += dt;
-        if (u.attack >= 0.47 && !u.hit) {
+        if (u.attack >= CONTACT && !u.hit) {
           u.hit = true;
-          if (Math.hypot(u.x - opponent.x, u.z - opponent.z) < 2.7) {
-            const blocked = opponent.guard;
-            const damage = blocked ? 3 : u.team === "knight" ? 22 : 17;
+          const facing = distance > 0 ? (-Math.sin(u.yaw) * dx - Math.cos(u.yaw) * dz) / distance : 1;
+          if (distance < 2.4 && facing > .65) {
+            const defenseFacing = distance > 0 ? (Math.sin(opponent.yaw) * dx + Math.cos(opponent.yaw) * dz) / distance : 1;
+            const blocked = opponent.team === 'knight' && opponent.guard && opponent.attack < 0 && defenseFacing > .5;
+            const damage = blocked ? 3 : u.team === "knight" ? 22 : 20;
             this.damage(opponent, damage, u, blocked);
           }
         }
@@ -214,6 +229,12 @@ export class Combat {
     if (target.deadAt !== null) return;
     target.hp = Math.max(0, target.hp - amount);
     target.recoil = 1;
+    target.hitAt = this.time;
+    target.blockedHit = blocked;
+    if (attacker) {
+      const length = Math.hypot(target.x - attacker.x, target.z - attacker.z) || 1;
+      target.hitDirection = { x: (target.x - attacker.x) / length, z: (target.z - attacker.z) / length };
+    }
     this.events++;
     this.onHit({ target, attacker, blocked, time: this.time });
     if (target.hp === 0) {

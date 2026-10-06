@@ -6,6 +6,7 @@ import { RoomEnvironment } from "./vendor/RoomEnvironment.js";
 import { buildFortress } from "./fortress.js";
 import { DragonFire } from "./fire.js";
 import { terrainHeight, dressBattlefield } from "./environment.js";
+import { groundHeight } from './ground.js';
 
 export class BattleWorld {
   constructor(
@@ -268,7 +269,11 @@ export class BattleWorld {
         new T.IcosahedronGeometry(0.035, 0),
         new T.MeshBasicMaterial({ color }),
       );
-      m.position.set(target.x, 1.3, target.z);
+      const reach = blocked ? .45 : .22;
+      const dx = attacker ? attacker.x - target.x : -Math.sin(target.yaw);
+      const dz = attacker ? attacker.z - target.z : -Math.cos(target.yaw);
+      const distance = Math.hypot(dx, dz) || 1;
+      m.position.set(target.x + dx / distance * reach, groundHeight(target.x, target.z) + 1.45, target.z + dz / distance * reach);
       this.scene.add(m);
       this.effects.push({
         mesh: m,

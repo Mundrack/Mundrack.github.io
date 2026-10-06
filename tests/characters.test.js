@@ -9,6 +9,7 @@ import { Scene } from '../js/vendor/three.module.js';
 import { BattleWorld } from '../js/battle-world.js';
 import { Combat } from '../js/combat.js';
 import { groundHeight } from '../js/ground.js';
+import { CONTACT, strikeTime, strikeLunge } from '../js/fight-motion.js';
 
 globalThis.ProgressEvent ??= class { constructor(type, init) { Object.assign(this, { type }, init); } };
 
@@ -34,6 +35,30 @@ function bounds(actor) {
   return new Box3().setFromObject(actor.root);
 }
 const unit = { x: 0, z: 0, yaw: 0, attack: -1, deadAt: null, pair: 0, recoil: 0, moving: false };
+
+test('strike timing preserves contact and torso reactions recover without accumulating', async () => {
+  assert.equal(strikeTime(CONTACT), CONTACT);
+  assert.equal(strikeLunge(CONTACT), 1);
+  assert.equal(strikeLunge(1), 0);
+  let previous = -1;
+  for (let i = 0; i <= 100; i++) {
+    const value = strikeTime(i / 100);
+    assert.ok(value >= previous && value <= 1); previous = value;
+  }
+  for (const team of ['knight', 'zombie']) {
+    const actor = new Character(await asset(team), team);
+    assert.ok(actor.chest, `${team} has the actual chest joint`);
+    actor.pose(unit, 0);
+    const original = actor.chest.quaternion.clone();
+    actor.pose({ ...unit, hitAt: 0, hitDirection: { x: 0, z: 1 } }, .045);
+    assert.ok(actor.chest.quaternion.angleTo(original) > .1);
+    actor.pose({ ...unit, hitAt: 0 }, 1);
+    const clean = new Character(await asset(team), team); clean.pose(unit, 1);
+    assert.ok(actor.chest.quaternion.angleTo(clean.chest.quaternion) < 1e-5);
+    actor.reset(); actor.pose(unit, 0);
+    assert.ok(actor.chest.quaternion.angleTo(original) < 1e-5);
+  }
+});
 
 test('support feet stay horizontally planted during actual forward strides and release for attacks', async t => {
   for (const team of ['knight', 'zombie']) {

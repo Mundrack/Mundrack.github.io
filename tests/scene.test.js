@@ -14,6 +14,49 @@ const snapshot = JSON.parse(
   ).replace(/^\uFEFF/, ""),
 );
 const repos = normalizeRepos(snapshot.repos);
+
+test('a committed strike cannot jump to a different victim after its target dies', () => {
+  const sim = new Combat();
+  sim.time = 14;
+  const [knight, target, , other] = sim.units;
+  sim.units = [knight, target, other];
+  knight.z = .8; target.z = -.8; other.z = -1; other.x = 0;
+  knight.attack = .46; knight.targetId = target.id;
+  target.deadAt = 14;
+  other.cooldown = 100;
+  const hp = other.hp;
+  sim.step(1 / 60);
+  assert.equal(other.hp, hp);
+  assert.equal(knight.attack, -1);
+});
+
+test('shield defense responds to a wind-up and zombies never receive shield blocking', () => {
+  const sim = new Combat(); sim.time = 14;
+  sim.units = sim.units.slice(0, 2);
+  const [knight, zombie] = sim.units;
+  knight.pair = zombie.pair = 2; knight.z = .8; zombie.z = -.8;
+  knight.cooldown = 100; zombie.attack = .2;
+  sim.step(1 / 60);
+  assert.equal(knight.guard, true);
+  assert.equal(zombie.guard, false);
+  zombie.attack = -1; zombie.cooldown = 100;
+  sim.step(1 / 60);
+  assert.equal(knight.guard, false);
+});
+
+test('a strike behind the attacker misses and a successful strike emits only one impact', () => {
+  for (const facing of [0, Math.PI]) {
+    const impacts = [];
+    const sim = new Combat([], { onHit: hit => impacts.push(hit) });
+    sim.time = 14; sim.units = sim.units.slice(0, 2);
+    const [knight, zombie] = sim.units;
+    knight.z = .8; zombie.z = -.8;
+    knight.yaw = facing; knight.attack = .46; knight.targetId = zombie.id;
+    zombie.cooldown = 100;
+    for (let i = 0; i < 20; i++) sim.step(1 / 60);
+    assert.equal(impacts.length, facing === 0 ? 1 : 0);
+  }
+});
 function worldStub() {
   return {
     width: 1440,

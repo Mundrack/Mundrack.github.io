@@ -3,6 +3,7 @@ import { GLTFLoader } from './vendor/GLTFLoader.js';
 import { clone } from './vendor/SkeletonUtils.js';
 import { groundHeight } from './ground.js';
 import { gaitProfile, stationaryClip, FootPlanting } from './locomotion.js';
+import { strikeTime, strikeLunge, reactionWeight } from './fight-motion.js';
 
 export async function loadCharacters() {
   const loader = new GLTFLoader();
@@ -82,6 +83,12 @@ export class Character {
       this.actions.set(clip.name, action);
     }
     this.previousTime = null;
+    this.chest = this.visual.getObjectByName(team === 'knight' ? 'chest' : 'Bip01_Spine2');
+    this.chestBase = this.chest?.quaternion.clone();
+    this.reactionAxis = new T.Vector3();
+    this.reactionRotation = new T.Quaternion();
+    this.chestWorld = new T.Quaternion();
+    this.chestParent = new T.Quaternion();
     this.gait = gaitProfile(asset, team);
     this.planting = new FootPlanting(this.visual, team, this.gait);
     this.contactSamples = [];
@@ -129,19 +136,33 @@ export class Character {
       const duration = action.getClip().duration;
       if (name === 'death') action.time = Math.min(Math.max(0, time - (unit.deadAt ?? time)), duration - 1e-5);
       else if (name === 'attack') {
-        if (unit.attack >= 0) action.time = unit.attack * (duration - 1e-5);
+        if (unit.attack >= 0) action.time = strikeTime(unit.attack) * (duration - 1e-5);
         else if (reset) action.time = 0;
         else action.time = Math.min(action.time + dt, duration - 1e-5);
       }
       else if (name === 'run' || name === 'walk') action.time = (this.travelTime + unit.pair * .17) % duration;
       else action.time = (time + unit.pair * .17) % duration;
     }
+    if (this.chest) this.chest.quaternion.copy(this.chestBase);
     this.mixer.update(0);
+    if (this.chest) this.chestBase.copy(this.chest.quaternion);
     this.root.position.set(unit.x, 0, unit.z);
     this.root.rotation.set(0, unit.yaw, 0);
-    this.visual.rotation.x = dead ? 0 : -(unit.recoil || 0) * .09;
-    this.visual.position.z = !dead && this.team === 'knight' && unit.attack >= 0
-      ? -.35 * Math.sin(Math.min(1, unit.attack) * Math.PI) : 0;
+    this.visual.rotation.x = 0;
+    this.visual.position.z = !dead && unit.attack >= 0
+      ? -(this.team === 'knight' ? .35 : .18) * strikeLunge(unit.attack) : 0;
+    // Rotate the upper body in world space so both differently authored rigs
+    // recoil away from the source. Hips and grounded feet remain stable.
+    const reaction = dead ? 0 : reactionWeight(time - (unit.hitAt ?? -Infinity), unit.blockedHit);
+    if (this.chest && reaction > 0) {
+      const direction = unit.hitDirection || { x: 0, z: 1 };
+      this.root.updateMatrixWorld(true);
+      this.reactionAxis.set(direction.z, 0, -direction.x).normalize();
+      this.reactionRotation.setFromAxisAngle(this.reactionAxis, reaction * (unit.blockedHit ? .07 : .23));
+      this.chest.getWorldQuaternion(this.chestWorld).premultiply(this.reactionRotation);
+      this.chest.parent.getWorldQuaternion(this.chestParent).invert();
+      this.chest.quaternion.copy(this.chestParent.multiply(this.chestWorld));
+    }
     if (!this.firstPerson) {
       this.ground(dead);
       const locomotion = this.actions.get(this.team === 'knight' ? 'run' : 'walk');
