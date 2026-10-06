@@ -59,6 +59,7 @@ js/data.js                GitHub, caché y respaldo
 css/battle.css            controles 3D y etiquetas ancladas
 js/scene.js               ciclo de vida, controles, etiquetas y audio
 js/combat.js              simulación determinista, daño y director de escenas
+js/camera-director.js     transiciones de cámara y encuadre vertical
 js/models.js              geometría auxiliar y rigs de prueba
 js/characters.js          carga glTF, esqueletos y animaciones
 js/locomotion.js          zancada medida y apoyo horizontal mediante IK
@@ -91,6 +92,8 @@ Este paso mejora los personajes, pero no alcanza calidad de película: la animac
 La primera fase de fluidez mide la zancada de los clips incluidos y sincroniza su reproducción con la distancia recorrida. Durante el apoyo, una corrección de las dos articulaciones de cada pierna mantiene el tobillo fijo horizontalmente; el contacto vertical sigue usando la geometría del pie y el terreno. La corrección se libera al atacar, morir, repetir o saltar entre tiempos. Los zombis tienen una pose de reposo independiente y los caballeros no sustituyen la carrera por guardia mientras avanzan. La persecución acelera y frena antes del duelo. Las pruebas CPU comprueban los apoyos y las transiciones; aún falta valorar la fluidez visual y el rendimiento en navegador. La siguiente fase se centra en golpes, bloqueos y reacciones.
 
 La segunda fase incorpora preparación, aceleración y recuperación del golpe con una curva de velocidad continua, avance del cuerpo hacia el contacto y reacciones del torso en la dirección del impacto. Cada ataque mantiene su víctima; el daño requiere distancia y orientación válidas. Los caballeros pueden responder a la preparación del rival levantando el escudo y los zombis ya no bloquean como si tuvieran uno. El daño de zombi se ajustó de 17 a 20 para conservar la presión del combate y las revelaciones de repositorios. Los efectos aparecen del lado del impacto y respetan la altura del terreno. El contacto sigue siendo una aproximación de distancia, orientación y tiempo: todavía no hay colisiones precisas entre arma y malla ni animaciones nuevas de captura de movimiento.
+
+La tercera fase centra el plano lateral entre los dos combatientes y sigue a otro caballero vivo si cae el protagonista. Las transiciones exteriores duran 1,2 segundos y suavizan posición, punto de mira y campo de visión; entrar y salir de primera persona conserva un corte directo. El encuadre vertical se amplía alrededor del sujeto. Cámara, anillos y etiquetas respetan la altura del terreno. Las pruebas de proyección verifican ambos combatientes en escritorio y móvil, pero no detectan oclusiones por árboles o arquitectura; la revisión visual y de rendimiento sigue pendiente.
 
 Three.js se carga únicamente al iniciar la batalla y está incluido localmente, con licencia MIT. WebGL 2 es necesario para la escena; si no está disponible, se muestra un mensaje y el portfolio permanece accesible. El movimiento reducido evita cargar el motor. La simulación avanza en pasos fijos de 1/60 s y se pausa fuera de pantalla. Los modelos se reutilizan al repetir la batalla.
 

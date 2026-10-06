@@ -6,7 +6,9 @@ import { RealmScene } from "../js/scene.js";
 import { Combat, chapter, DURATION } from "../js/combat.js";
 import { normalizeRepos } from "../js/data.js";
 import { BattleWorld } from "../js/battle-world.js";
-import { Vector3 } from "../js/vendor/three.module.js";
+import { Vector3, PerspectiveCamera } from "../js/vendor/three.module.js";
+import { CameraDirector, fitPortrait } from '../js/camera-director.js';
+import { groundHeight } from '../js/ground.js';
 const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const snapshot = JSON.parse(
   (
@@ -14,6 +16,65 @@ const snapshot = JSON.parse(
   ).replace(/^\uFEFF/, ""),
 );
 const repos = normalizeRepos(snapshot.repos);
+
+test('exterior camera transitions preserve the starting frame, pause and arrive without FOV jumps', () => {
+  const director = new CameraDirector(), camera = new PerspectiveCamera(52), target = new Vector3();
+  const first = { eye: new Vector3(0, 5, 20), look: new Vector3(0, 1, 0), fov: 52, mode: 'wide', time: 0, dt: 0 };
+  director.update(camera, target, first);
+  const next = { eye: new Vector3(5, 3, 4), look: new Vector3(1, 1, 0), fov: 46, mode: 'side', time: 13, dt: 1/60 };
+  director.update(camera, target, next);
+  assert.ok(camera.position.distanceTo(first.eye) < 1e-8);
+  assert.equal(camera.fov, 52);
+  director.update(camera, target, { ...next, time: 13.6 });
+  const paused = camera.position.clone(), fov = camera.fov;
+  director.update(camera, target, { ...next, time: 13.6, dt: 0 });
+  assert.ok(camera.position.distanceTo(paused) < 1e-8);
+  assert.equal(camera.fov, fov);
+  director.update(camera, target, { ...next, time: 14.21 });
+  assert.ok(camera.position.distanceTo(next.eye) < 1e-8);
+  assert.equal(camera.fov, 46);
+  director.update(camera, target, first);
+  assert.ok(camera.position.distanceTo(first.eye) < 1e-8, 'replay resets the shot');
+});
+
+test('portrait framing keeps the subject on the same viewing ray and first person cuts directly', () => {
+  const look = new Vector3(20, 2, -10), eye = new Vector3(25, 5, -4);
+  const ray = eye.clone().sub(look), distance = ray.length();
+  fitPortrait(eye, look, .5);
+  assert.ok(eye.distanceTo(look) > distance);
+  assert.ok(eye.clone().sub(look).normalize().dot(ray.normalize()) > .99999);
+  const director = new CameraDirector(), camera = new PerspectiveCamera(), target = new Vector3();
+  director.update(camera, target, { eye, look, fov: 46, mode: 'side', time: 20, dt: 0 });
+  const helmet = new Vector3(0, 2.15, .8);
+  director.update(camera, target, { eye: helmet, look, fov: 68, mode: 'first', time: 22, dt: 1/60 });
+  assert.ok(camera.position.distanceTo(helmet) < 1e-8);
+  assert.equal(camera.fov, 68);
+});
+
+test('duel framing contains both fighters on desktop and portrait and follows a survivor', () => {
+  const renderer = { shadowMap: {}, setPixelRatio() {}, setSize() {}, dispose() {} };
+  const world = new BattleWorld({ addEventListener() {}, removeEventListener() {} }, { rendererFactory: () => renderer });
+  const combat = new Combat(); combat.time = 16;
+  combat.player.x = 8; combat.player.z = -4;
+  combat.units[1].x = 8; combat.units[1].z = -5.6;
+  combat.player.targetId = combat.units[1].id;
+  for (const [width, height] of [[1440, 880], [390, 844]]) {
+    world.resize(width, height);
+    world.cameraShot('side', combat, 0);
+    for (const unit of combat.units.slice(0, 2)) {
+      for (const height of [.1, 2.3]) {
+        const point = new Vector3(unit.x, groundHeight(unit.x, unit.z) + height, unit.z).project(world.camera);
+        assert.ok(Math.abs(point.x) < .95 && Math.abs(point.y) < .95 && Math.abs(point.z) < 1);
+      }
+    }
+  }
+  combat.player.deadAt = 16;
+  world.cameraShot('side', combat, 1/60);
+  assert.equal(world.focusId, combat.units[2].id);
+  world.cameraShot('first', combat, 1/60);
+  assert.equal(world.activeCamera, 'overhead');
+  world.dispose();
+});
 
 test('a committed strike cannot jump to a different victim after its target dies', () => {
   const sim = new Combat();

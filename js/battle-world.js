@@ -7,6 +7,7 @@ import { buildFortress } from "./fortress.js";
 import { DragonFire } from "./fire.js";
 import { terrainHeight, dressBattlefield } from "./environment.js";
 import { groundHeight } from './ground.js';
+import { CameraDirector, fitPortrait } from './camera-director.js';
 
 export class BattleWorld {
   constructor(
@@ -51,6 +52,9 @@ export class BattleWorld {
     this.rigs = [];
     this.lastCamera = "";
     this.target = new T.Vector3();
+    this.director = new CameraDirector();
+    this.shotEye = new T.Vector3();
+    this.shotLook = new T.Vector3();
     this.contextLost = (e) => {
       e.preventDefault();
       onContextLost();
@@ -239,6 +243,8 @@ export class BattleWorld {
     this.viewRig.root.visible = false;
   }
   setUnits(units) {
+    this.director.reset();
+    this.focusId = null;
     if (!this.rigs.length)
       this.rigs = units.map((unit) => {
         const rig = this.characters ? new Character(this.characters[unit.team], unit.team) : knightModel(unit.team === "zombie");
@@ -255,6 +261,7 @@ export class BattleWorld {
     this.effects = [];
   }
   resize(width, height) {
+    if (this.width !== Math.max(width, 1) || this.height !== Math.max(height, 1)) this.director.reset();
     this.width = Math.max(width, 1);
     this.height = Math.max(height, 1);
     this.renderer.setSize(this.width, this.height, false);
@@ -300,7 +307,7 @@ export class BattleWorld {
       }),
     );
     ring.rotation.x = -Math.PI / 2;
-    ring.position.set(unit.x, 0.012, unit.z);
+    ring.position.set(unit.x, groundHeight(unit.x, unit.z) + .012, unit.z);
     this.scene.add(ring);
     this.effects.push({ mesh: ring, start: unit.deadAt, life: Infinity });
   }
@@ -365,36 +372,48 @@ export class BattleWorld {
       lead = combat.player,
       dead = lead.deadAt !== null,
       first = mode === "first" && !dead && t >= 13 && t < 43;
-    const eye = new T.Vector3(),
-      look = new T.Vector3();
+    const eye = this.shotEye, look = this.shotLook;
+    let focus = combat.units.find(u => u.id === this.focusId && u.deadAt === null);
+    if (!focus || (!dead && focus !== lead)) {
+      focus = !dead ? lead : combat.units.find(u => u.team === 'knight' && u.deadAt === null) || lead;
+      this.focusId = focus.id;
+    }
+    const rival = combat.units.find(u => u.id === focus.targetId && u.deadAt === null)
+      || combat.units.find(u => u.team !== focus.team && u.pair === focus.pair && u.deadAt === null);
+    const floor = groundHeight(focus.x, focus.z);
+    const effectiveMode = mode === 'first' && !first ? 'overhead' : mode;
     let fov = 52;
     if (mode === "wide") {
       const p = smooth(t / 6);
       eye.set(23 * (1 - p), 18 - 13 * p, 40 - 16 * p);
       look.set(0, 1, -2);
     } else if (first) {
-      eye.set(lead.x, 2.15 + Math.sin(t * 3) * 0.012, lead.z - 0.04);
+      eye.set(lead.x, groundHeight(lead.x, lead.z) + 2.15 + Math.sin(t * 3) * 0.012, lead.z - 0.04);
       look.set(
         lead.x - Math.sin(lead.yaw) * 6,
-        1.7,
+        groundHeight(lead.x, lead.z) + 1.7,
         lead.z - Math.cos(lead.yaw) * 6,
       );
       fov = 68;
     } else if (mode === "follow") {
       eye.set(
-        lead.x + Math.sin(lead.yaw) * 5 + 1.15,
-        3.0,
-        lead.z + Math.cos(lead.yaw) * 5,
+        focus.x + Math.sin(focus.yaw) * 5 + Math.cos(focus.yaw) * 1.15,
+        floor + 3.0,
+        focus.z + Math.cos(focus.yaw) * 5 - Math.sin(focus.yaw) * 1.15,
       );
       look.set(
-        lead.x - Math.sin(lead.yaw) * 5,
-        1.55,
-        lead.z - Math.cos(lead.yaw) * 5,
+        focus.x - Math.sin(focus.yaw) * 5,
+        floor + 1.55,
+        focus.z - Math.cos(focus.yaw) * 5,
       );
     } else if (mode === "side") {
       const push = smooth((t - 13) / 9);
-      eye.set(lead.x + 3.8 - push * .7, 2.25, lead.z + 2.2 - push * .5);
-      look.set(lead.x, 1.45, lead.z - .7);
+      const x = rival ? (focus.x + rival.x) / 2 : focus.x;
+      const z = rival ? (focus.z + rival.z) / 2 : focus.z;
+      const right = 4.6 - push * .6, back = 2.8 - push * .4;
+      eye.set(x + Math.cos(focus.yaw) * right + Math.sin(focus.yaw) * back,
+        floor + 2.6, z - Math.sin(focus.yaw) * right + Math.cos(focus.yaw) * back);
+      look.set(x, floor + 1.3, z);
       fov = 46;
     } else if (mode === "dragon") {
       const fly = clamp((t - 43) / 7);
@@ -408,22 +427,12 @@ export class BattleWorld {
       look.set(0, 0, -1.8);
       fov = 50;
     }
-    if (this.width < 650 && !first) {
-      eye.x *= 1.15;
-      eye.y *= 1.3;
-      eye.z *= 1.3;
-      fov += 7;
-    }
-    // First-person is an intentional camera cut; exterior shots use damped travel.
-    const snap =
-      first || this.lastCamera === "first" || !this.lastCamera || dt === 0;
-    const blend = snap ? 1 : 1 - Math.exp(-dt * 2.8);
-    this.camera.position.lerp(eye, blend);
-    this.target.lerp(look, blend);
+    if (!first) fitPortrait(eye, look, this.camera.aspect);
+    eye.y = Math.max(eye.y, groundHeight(eye.x, eye.z) + .5);
+    this.director.update(this.camera, this.target, {eye, look, fov, mode: effectiveMode, time: t, dt});
+    this.camera.position.y = Math.max(this.camera.position.y, groundHeight(this.camera.position.x, this.camera.position.z) + .5);
     this.camera.lookAt(this.target);
-    this.camera.fov = fov;
-    this.camera.updateProjectionMatrix();
-    this.lastCamera = first ? "first" : mode;
+    this.lastCamera = effectiveMode;
     this.viewRig.root.visible = first;
     if (first) {
       const rig = this.viewRig;
@@ -433,11 +442,11 @@ export class BattleWorld {
       rig.root.rotation.set(0, 0, 0);
       this.rigs[0].root.visible = false;
     }
-    this.activeCamera = first ? "first" : mode;
+    this.activeCamera = effectiveMode;
     this.camera.updateMatrixWorld();
   }
   project(unit) {
-    const p = new T.Vector3(unit.x, 0.5, unit.z).project(this.camera);
+    const p = new T.Vector3(unit.x, groundHeight(unit.x, unit.z) + 0.5, unit.z).project(this.camera);
     return {
       x: (p.x * 0.5 + 0.5) * this.width,
       y: (-0.5 * p.y + 0.5) * this.height,
