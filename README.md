@@ -60,6 +60,7 @@ css/battle.css            controles 3D y etiquetas ancladas
 js/scene.js               ciclo de vida, controles, etiquetas y audio
 js/combat.js              simulación determinista, daño y director de escenas
 js/camera-director.js     transiciones de cámara y encuadre vertical
+js/dragon-flight.js       trayectoria y balanceo coordinados con el aleteo
 js/models.js              geometría auxiliar y rigs de prueba
 js/characters.js          carga glTF, esqueletos y animaciones
 js/locomotion.js          zancada medida y apoyo horizontal mediante IK
@@ -85,7 +86,7 @@ Los cuatro recursos se generaron con ImageGen. Los prompts y las ubicaciones est
 
 La batalla usa **personajes 3D texturizados con esqueletos**, publicados bajo CC-BY 3.0. Se reconstruyeron los materiales del caballero y se añadieron cinco animaciones propias (reposo, carrera, ataque, bloqueo y caída). El zombie conserva las animaciones de caminar, furia y muerte de Pixelhouse, convertidas desde FBX 6.1. Las licencias, modificaciones y fuentes están en `ASSETS.md` y en la página pública de créditos. Los dos GLB suman aproximadamente 6,6 MB y se cargan al iniciar la batalla.
 
-El dragón usa el modelo texturizado CC0 de Cethiel y Drummyfish, con una animación de vuelo propia y fuego que sale de un punto ligado a la mandíbula. La cámara le dedica el plano final. El terreno usa mapas de color, normales y rugosidad de Brown Mud Rocks 01 (Rob Tuytel / Poly Haven, CC0). Los tres modelos y los mapas del terreno y fortaleza suman unos 16,5 MB. La carga adicional corresponde al detalle del dragón y los materiales de piedra.
+El dragón usa el modelo texturizado CC0 de Cethiel y Drummyfish, con una animación de vuelo propia y fuego que sale de un punto ligado a la mandíbula. La revisión del 7 de octubre incorpora materiales de 2K con detalle procedural, filtrado anisotrópico y un ciclo continuo de dos segundos con movimiento encadenado de hombros, alas, cuello y cola. La trayectoria y la cámara comparten el mismo recorrido curvo. El dragón pesa unos 7,45 MB; se conserva la geometría estilizada original. La cámara le dedica el plano final. El terreno usa mapas de color, normales y rugosidad de Brown Mud Rocks 01 (Rob Tuytel / Poly Haven, CC0). Los tres modelos y los mapas del terreno y fortaleza suman aproximadamente 19,4 MB.
 
 Este paso mejora los personajes, pero no alcanza calidad de película: la animación del caballero es artesanal, el zombie tiene ropa contemporánea y el dragón es estilizado. Falta revisión visual en el navegador y pulir la coreografía. Los golpes usan partículas discretas; el sonido sigue siendo sintetizado. No se utilizó Mixamo.
 

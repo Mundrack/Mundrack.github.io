@@ -18,6 +18,12 @@ Atribución visible para visitantes en `credits.html`, enlazada desde el pie. No
 
 ## Dragón y terreno (CC0)
 
+### Dragón · 7 de octubre de 2026
+
+`scripts/refine-dragon.py` parte del GLB de `c8247ab` y produce el nuevo GLB más un render de inspección usando Blender 4.5. La textura original de 472 × 420 se conserva como una capa de color dentro del nuevo material: los detalles adicionales son escamas y variaciones de rugosidad procedurales, no detalle recuperado de una imagen de alta resolución. Albedo de piel y membranas, normales y rugosidad se exportan a 2048 × 2048. El archivo final pesa aproximadamente 7,45 MB (antes 4,52 MB), con la misma geometría y atribución CC0.
+
+Se sustituye el aleteo anterior por un ciclo de dos segundos muestreado a 48 fps, con extremos idénticos, hombros y alas desfasados, cuello, cola y patas con movimiento secundario. Se eliminan los clips que no se usan. `js/dragon-flight.js` coordina trayectoria curva, orientación y balanceo con ese periodo; cámara y modelo usan la misma trayectoria. Se mantiene `FlameMouth` para el fuego. El render de Blender inspecciona el material y la pose; no confirma rendimiento ni aspecto final en WebGL.
+
 - `assets/models/dragon.glb`: **Cethiel's Dragon 3D**, por **Cethiel y Drummyfish**, https://opengameart.org/content/cethiels-dragon-3d . Fuente: https://opengameart.org/sites/default/files/dragon_oga.zip . Cambios: textura oscura, reconstrucción de materiales, subdivisión y suavizado de geometría, animación propia de vuelo, pose de alas y emisor de fuego ligado a la mandíbula. Exportación GLB con Blender.
 - `assets/textures/ground-*.jpg`: **Brown Mud Rocks 01**, por **Rob Tuytel / Poly Haven**, https://polyhaven.com/a/brown_mud_rocks_01 . Mapas JPEG de 1K: Diffuse, nor_gl y Rough, sin modificaciones. Licencia: https://polyhaven.com/license .
 

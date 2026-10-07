@@ -203,7 +203,12 @@ export class Dragon {
     this.visual.rotation.y = Math.PI;
     this.root.add(this.visual);
     this.root.scale.setScalar(10);
-    this.visual.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+    this.visual.traverse(o => { if (o.isMesh) {
+      o.castShadow = true; o.frustumCulled = false;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        for (const key of ['map', 'normalMap', 'roughnessMap', 'metalnessMap']) if (m[key]) m[key].anisotropy = 8;
+      }
+    } });
     this.mouth = this.visual.getObjectByName('FlameMouth');
     this.mixer = new T.AnimationMixer(this.visual);
     this.flight = this.mixer.clipAction(asset.animations.find(a => a.name === 'fly'));

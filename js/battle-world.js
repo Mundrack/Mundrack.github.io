@@ -8,6 +8,7 @@ import { DragonFire } from "./fire.js";
 import { terrainHeight, dressBattlefield } from "./environment.js";
 import { groundHeight } from './ground.js';
 import { CameraDirector, fitPortrait } from './camera-director.js';
+import { dragonFlight } from './dragon-flight.js';
 
 export class BattleWorld {
   constructor(
@@ -344,15 +345,11 @@ export class BattleWorld {
         e.mesh.position.y -= age * age * 2;
       }
     }
-    const fly = clamp((t - 43) / 7);
+    const flight = dragonFlight(t);
     this.dragon.root.visible = t >= 43;
     if (t >= 43) {
-      this.dragon.root.position.set(
-        -10 + fly * 18,
-        12 + Math.sin(t) * 0.3,
-        -8 + fly * 10,
-      );
-      this.dragon.root.rotation.y = -2.08;
+      this.dragon.root.position.set(flight.x, flight.y, flight.z);
+      this.dragon.root.rotation.set(flight.pitch, flight.yaw, flight.roll);
       this.dragon.pose?.(t);
       this.dragon.wings?.forEach(
         (w, i) =>
@@ -416,10 +413,9 @@ export class BattleWorld {
       look.set(x, floor + 1.3, z);
       fov = 46;
     } else if (mode === "dragon") {
-      const fly = clamp((t - 43) / 7);
-      const x = -10 + fly * 18, z = -8 + fly * 10;
-      eye.set(x + 15, 15, z + 19);
-      look.set(x, 9, z);
+      const flight = dragonFlight(t);
+      eye.set(flight.x + 15, 15, flight.z + 19);
+      look.set(flight.x, flight.y - 2.4, flight.z);
       fov = 56;
     } else {
       const angle = (t - 32) * 0.015;

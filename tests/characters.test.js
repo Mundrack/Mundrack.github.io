@@ -10,6 +10,7 @@ import { BattleWorld } from '../js/battle-world.js';
 import { Combat } from '../js/combat.js';
 import { groundHeight } from '../js/ground.js';
 import { CONTACT, strikeTime, strikeLunge } from '../js/fight-motion.js';
+import { WING_PERIOD, dragonFlight } from '../js/dragon-flight.js';
 
 globalThis.ProgressEvent ??= class { constructor(type, init) { Object.assign(this, { type }, init); } };
 
@@ -232,6 +233,40 @@ test('dragon flight deforms wings and fire emitter follows the actual jaw', asyn
   assert.ok(fire.positions.every(Number.isFinite));
   fire.update(49, mouth, new Vector3());
   assert.equal(fire.points.visible, false);
+});
+
+test('dragon flight closes its loop and articulates shoulders, wing tips, neck and tail', async () => {
+  const gltf = await asset('dragon'), dragon = new Dragon(gltf);
+  const clip = dragon.flight.getClip();
+  assert.ok(Math.abs(clip.duration - WING_PERIOD) < 1e-6);
+  for (const track of clip.tracks) {
+    const size = track.getValueSize();
+    for (let i = 0; i < size; i++) assert.ok(Math.abs(track.values[i] - track.values[track.values.length - size + i]) < 1e-5, `${track.name} loops cleanly`);
+  }
+  const names = ['wing_upperL', 'wing_lowerL', 'neck1', 'tail3'];
+  // GLTFLoader strips dots from node names when making animation bindings.
+  const joints = names.map(name => dragon.visual.getObjectByName(name));
+  assert.ok(joints.every(Boolean));
+  dragon.pose(43); const before = joints.map(j => j.quaternion.clone());
+  dragon.pose(43.5);
+  joints.forEach((j,i) => assert.ok(j.quaternion.angleTo(before[i]) > .005, names[i]));
+  const a = dragonFlight(44), b = dragonFlight(44.001);
+  assert.ok(Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z) < .01);
+  assert.ok(Math.abs(a.yaw-b.yaw) < .01);
+});
+
+test('dragon includes 2K albedo, normal and roughness maps within the download budget', async () => {
+  const data = await readFile(new URL('../assets/models/dragon.glb', import.meta.url));
+  const length = data.readUInt32LE(12), json = JSON.parse(data.subarray(20,20+length));
+  assert.ok(data.length < 12 * 1024 * 1024);
+  assert.ok(json.materials.every(m => m.normalTexture && m.pbrMetallicRoughness.baseColorTexture && m.pbrMetallicRoughness.metallicRoughnessTexture));
+  for (const im of json.images) {
+    const view = json.bufferViews[im.bufferView];
+    const png = data.subarray(28+length+view.byteOffset);
+    assert.equal(im.mimeType, 'image/png');
+    assert.equal(png.readUInt32BE(16), 2048);
+    assert.equal(png.readUInt32BE(20), 2048);
+  }
 });
 
 test('full world runs shipped characters through every cinematic phase and replay (CPU only)', async () => {
